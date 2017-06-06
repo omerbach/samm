@@ -1,0 +1,44 @@
+﻿<html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+        #debtsContent{
+            font-size:12px;
+        }
+        th{
+            padding: 5px;
+            background: #333 url(http://www.roscripts.com/images/llsh.gif) repeat-x;
+            color: #fff;
+            text-align: right;
+        }
+        td{
+            padding: 5px;
+            border-bottom: dotted 1px #333;
+        }
+        table{
+            width: 100%;
+            border-collapse:collapse;
+        }
+        </style>
+    </head>
+    <body dir="rtl">
+    %import utils
+        <div id="debtsContent" align="center">
+            <table>
+                <tbody>
+                    <tr id="tenantHeader">                                                                       
+                        <th>דירה</th>                         
+                        <th>שם בעלים</th>
+                    </tr>
+                    
+                %for t in tenants:                        
+                    <tr class="tenantData">              
+                    <td class="appartment">{{ t.get("appartment", "") }}</td>
+                    <td class="name">{{ t.get("name", "") }}</td>
+                    </tr>
+                %end
+                </tbody>
+            </table>
+        </div>      
+    </body>                         
+</html>
