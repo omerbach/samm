@@ -1,0 +1,206 @@
+﻿<!-- This is the one and only static file which gets loaded at launch -->
+<!DOCTYPE html>
+<html ng-app="sam">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SAMM - ניהול ועד בית</title>
+
+	<!--link rel="stylesheet" type="text/css" href="https://rawgithub.com/angular-ui/ng-grid/v2.0.7/ng-grid.css" /-->
+	<link rel="stylesheet" type="text/css" href="angular-ui/ng-grid/2.0.7/ng-grid.css" />
+	<link rel="stylesheet" href="web/css/sam.css" />
+	<link rel="stylesheet" href="web/css/select2.css" />
+	<!-- http://tarruda.github.io/bootstrap-datetimepicker/ -->
+	<link rel="stylesheet" href="bootstrap-datetimepicker-0.0.11/css/bootstrap-datetimepicker.min.css" />
+	<link rel="stylesheet" href="http://cdn.jsdelivr.net/angular.ngtable/0.3.3/ng-table.css" />			
+	
+    <!-- Core CSS - Include with every page -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" media="all" href="css/bootstrap.min.css">    
+	<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- Page-Level Plugin CSS - Dashboard -->
+    <link href="css/plugins/morris/morris-0.4.3.min.css" rel="stylesheet">
+    <link href="css/plugins/timeline/timeline.css" rel="stylesheet">
+
+    <!-- SB Admin CSS - Include with every page -->
+    <link href="css/sb-admin.css" rel="stylesheet">
+	<link href="angular-xeditable-0.1.8/css/xeditable.css" rel="stylesheet">		
+	
+
+</head>
+
+<body>
+	<script type="text/ng-template" id="customTemplate.html">
+		<a>
+			<i class="fa" ng-class="match.model.icon" ></i>
+			<span bind-html-unsafe="match.label | typeaheadHighlight:query"></span>
+		</a>
+	</script>
+	
+    <div id="wrapper">
+
+        <nav ng-controller="NavBarCtrl" ng-hide="hide()" dir="rtl" id="sam-navbar-content" class="navbar navbar-default navbar-fixed-top" role="navigation">
+            <div class="navbar-header">                
+                <!-- <a class="navbar-brand" href="index.html"><img class="logo_in_header" src="web/img/logo.png"/>SAM - v1.0 </a> -->
+				<div id="logo" style="position: absolute;top: -15px;">
+					<a href="http://www.samm.co.il" title="SamM | תוכנה לניהול ועד בית" target="_blank">
+						<img src="SAMM.png" alt="SamM">
+					</a>
+				</div>
+				
+				<table ng-controller="TypeaheadSearchCtrl" id="sam-search-table">
+				<tr>
+				<td id="search-button-td">
+				<button ng-click="ShowElementPage()" id="search-button" class="btn btn-primary"><i class="fa fa-search"></i></button>
+				</td>
+				<td>
+				<div class="input-group" dir="rtl" id="search-sam-components-bar">													
+					<input class="form-control" size="100" dir="rtl" id="searchInput" typeahead-on-select="ShowElementPage()" type="text" ng-model="multiElement" placeholder="חפש בנין, דייר, בעל מקצוע, עובד חברה, טלפון ... " typeahead="data as data.name for data in guessMultiElement($viewValue)" typeahead-loading="loadingLocations" typeahead-template-url="customTemplate.html" typeahead-min-length="2">
+                </div>
+				</td>
+				</tr>
+				</table>
+            </div>
+            <!-- /.navbar-header -->
+
+            
+            <!-- /.navbar-top-links -->
+
+            <div dir="rtl" class="navbar-default navbar-static-side" role="navigation">
+                <div class="sidebar-collapse">
+                    <ul ng-controller="SideMenuCtrl" class="nav" id="side-menu">
+                        
+						
+						<!-- http://stackoverflow.com/questions/12592472/how-to-highlight-a-current-menu-item-in-angularjs -->
+						
+                        <li ng-class="{active: isRoot('/')}">
+                            <a href="#"><i class="fa fa-dashboard fa-fw"></i> מסך ראשי</a>
+                        </li>
+						
+						<li ng-class="{active: isActive('/buildings')}">
+                            <a href="#buildings"><i class="fa fa-building fa-fw"></i> בניינים</a>
+                        </li>
+						
+						<li ng-class="{active: isActive('/tenants')}">
+                            <a href="#tenants"><i class="fa fa-male fa-fw"></i> דיירים</a>
+                        </li> 
+
+						<li ng-class="{active: isActive('/service')}">
+                            <a href="#service"><i class="fa fa-wrench fa-fw"></i> קריאות שירות</a>
+                        </li>	
+						
+						<li ng-class="{active: isActive('/professionals')}">
+                            <a href="#professionals"><i class="fa fa-suitcase fa-fw"></i> אנשי מקצוע</a>
+                        </li>
+						
+						<li ng-class="{active: isActive('/workers')}">
+                            <a href="#workers"><i class="fa fa-users fa-fw"></i> עובדי חברה</a>
+                        </li>																
+						
+						<li ng-class="{active: isActive('/group_mail')}">
+                            <a href="#group_mail"><i class="fa fa-envelope-o fa-fw"></i> אימייל קבוצתי</a>
+                        </li>
+						
+						<li ng-class="{active: isActive('/group_sms')}">
+                            <a href="#group_sms"><i class="fa fa-comment-o  fa-fw"></i> סמס קבוצתי</a>
+                        </li>										
+						
+						<li ng-class="{active: isActive('/payments')}">
+                            <a href="#payments"><i class="fa fa-dollar  fa-fw"></i>תשלומים </a>
+                        </li>
+						
+						<li ng-class="{active: isActive('/history')}">
+                            <a href="#history"><i class="fa fa-history fa-fw"></i> יומן פעילות</a>
+                        </li>
+						
+						<li ng-class="{active: isActive('/settings')}">
+                            <a href="#settings"><i class="fa fa-cog fa-fw"></i> הגדרות</a>
+                        </li>
+						
+						<li ng-class="{active: isActive('/templates')}">
+                            <a href="#templates"><i class="fa fa-newspaper-o fa-fw"></i> תבניות</a>
+                        </li>
+										
+                    </ul>                    
+                </div>                
+            </div>            
+        </nav>
+
+		<!-- Load dynamically each part here-->
+        <div dir="rtl" id="page-wrapper">
+			<!-- angular templating -->
+			<!-- this is where content will be injected -->
+            <div id="sam-view" dir="rtl" ng-view></div>            						                        
+        </div>                
+    </div>
+    
+	
+	<!--WEBSCOPE-->
+	<script src="http://app.webscopeapp.com/external.bundle.js" async data-webscope-id="592dec7f-b293-4b33-a4ef-e4d1c2c2ec33"></script>
+	<!--WEBSCOPE-->
+    <!-- Core Scripts - Include with every page -->
+    <script src="js/jquery-1.10.2.js"></script>	
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/plugins/metisMenu/jquery.metisMenu.js"></script>
+	
+	<!--<script src="http://tinymce.cachefly.net/4.1/tinymce.min.js"></script>-->
+	
+    <!-- Page-Level Plugin Scripts - Dashboard -->
+    
+
+    <!-- SB Admin Scripts - Include with every page -->
+    <script src="js/sb-admin.js"></script>
+	
+	<!--script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.13/angular.js"></script-->
+    <!--script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.13/angular-route.js"></script-->	
+	<script type="text/javascript" src="angularjs/1.2.13/angular.js"></script>
+    <script type="text/javascript" src="angularjs/1.2.13/angular-route.js"></script>	
+    <!--script type="text/javascript" src="https://rawgithub.com/angular-ui/ng-grid/2.0.8/build/ng-grid.js"></script-->
+	<script type="text/javascript" src="angular-ui/ng-grid/2.0.8/build/ng-grid.js"></script>
+    <!--script type="text/javascript" src="https://rawgithub.com/angular-ui/ng-grid/2.0.8/plugins/ng-grid-layout.js"></script-->
+	<script data-require="ng-table@*" data-semver="0.3.0" src="http://bazalt-cms.com/assets/ng-table/0.3.0/ng-table.js"></script>
+	<script type="text/javascript" src="http://cdn.jsdelivr.net/angular.ngtable/0.3.3/ng-table.js"></script>
+	    
+	<script src="http://tinymce.cachefly.net/4.1/tinymce.min.js"></script>
+	<script src="web/js/tinyMCE/hebrewSupport/he_IL.js"></script>
+	<script src="web/js/angularTinyMCE/tinymce.js"></script>	
+
+	
+	<!-- http://forum.ionicframework.com/t/how-can-i-have-one-file-per-controller/1269 -->
+	<script type="text/javascript" src="web/js/app.js"></script>
+	<script type="text/javascript" src="web/js/printElement.js"></script>
+	<script type="text/javascript" src="web/controllers/buildings.js"></script>
+	<script type="text/javascript" src="web/controllers/tenants.js"></script>
+	<script type="text/javascript" src="web/controllers/history.js"></script>
+	<script type="text/javascript" src="web/controllers/group_mail.js"></script>	
+	<script type="text/javascript" src="web/controllers/group_sms.js"></script>	
+	<script type="text/javascript" src="web/controllers/professionals.js"></script>
+	<script type="text/javascript" src="web/controllers/dashboard.js"></script>
+	<script type="text/javascript" src="web/controllers/service.js"></script>
+	<script type="text/javascript" src="web/controllers/workers.js"></script>
+	<script type="text/javascript" src="web/controllers/settings.js"></script>
+	<script type="text/javascript" src="web/controllers/templates.js"></script>
+	<script type="text/javascript" src="web/controllers/payments.js"></script>
+	
+	<!-- http://stackoverflow.com/questions/21347714/trying-to-use-angular-ui-select2-in-tag-mode-not-simple-tag-losing-objects-->
+	<!-- https://github.com/angular-ui/ui-select2 -->
+	<script type="text/javascript" src="web/js/ui-select2.js"></script>
+	<script type="text/javascript" src="web/js/select2.js"></script>	
+	<script type="text/javascript" src="web/js/underscore-min.js"></script>
+	<script type="text/javascript" src="angular-xeditable-0.1.8/js/xeditable.min.js"></script>		
+	<script type="text/javascript" src="angular-xeditable-0.1.8/js/checklist-model.js"></script>
+	
+	<!-- http://stackoverflow.com/questions/23396398/ng-grid-auto-dynamic-height -->
+	<script type="text/javascript" src="web/js/ngFlexibleGrid.js"></script>
+	<script type="text/javascript" src="web/js/ngAutoRowHeightGrid.js"></script>
+	<script type="text/javascript" src="web/js/ui-bootstrap-tpls-0.11.0.min.js"></script>	
+	<!-- http://tarruda.github.io/bootstrap-datetimepicker/ -->
+	<script type="text/javascript" src="bootstrap-datetimepicker-0.0.11/js/bootstrap-datetimepicker.min.js"></script>		
+
+</body>
+
+</html>

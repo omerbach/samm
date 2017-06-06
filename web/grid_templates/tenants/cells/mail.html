@@ -1,0 +1,2 @@
+<input ng-disabled="tenants.doesDestinationExist(row.entity, 'mail')" ng-change="tenants.updateAlertCount('mail', row.entity['send_mail'])" ng-model="row.entity['send_mail']" class="checkBoxAlerts" type="checkbox"/>
+<i ng-class="tenants.getRowAlertState('mail', row.entity)" class="fa"></i>

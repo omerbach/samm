@@ -1,0 +1,743 @@
+/* 
+
+.input-append .add-on, .input-prepend .add-on {
+display: inline-block;
+width: auto;
+height: 20px;
+min-width: 16px;
+padding: 4px 5px;
+font-size: 14px;
+font-weight: normal;
+line-height: 20px;
+text-align: center;
+text-shadow: 0 1px 0 #fff;
+background-color: #eee;
+border: 1px solid #ccc;
+}
+
+
+.dropdown-menu li>a:hover, .dropdown-menu li>a:focus, .dropdown-submenu:hover>a {
+color: #fff;
+text-decoration: none;
+background-color: #0081c2;
+background-image: -moz-linear-gradient(top,#08c,#0077b3);
+background-image: -webkit-gradient(linear,0 0,0 100%,from(#08c),to(#0077b3));
+background-image: -webkit-linear-gradient(top,#08c,#0077b3);
+background-image: -o-linear-gradient(top,#08c,#0077b3);
+background-image: linear-gradient(to bottom,#08c,#0077b3);
+background-repeat: repeat-x;
+filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0088cc',endColorstr='#ff0077b3',GradientType=0);
+}
+.dropdown-menu li>a {
+display: block;
+padding: 3px 20px;
+clear: both;
+font-weight: normal;
+line-height: 20px;
+color: #333;
+white-space: nowrap;
+}
+
+
+.dropdown-menu {
+position: absolute;
+top: 100%;
+left: 0;
+z-index: 1000;
+display: none;
+float: left;
+min-width: 160px;
+padding: 5px 0;
+margin: 2px 0 0;
+list-style: none;
+background-color: #fff;
+border: 1px solid #ccc;
+border: 1px solid rgba(0,0,0,0.2);
+-webkit-border-radius: 6px;
+-moz-border-radius: 6px;
+border-radius: 6px;
+-webkit-box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+-moz-box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+-webkit-background-clip: padding-box;
+-moz-background-clip: padding;
+background-clip: padding-box;
+}
+ */
+ 
+@import url(http://fonts.googleapis.com/earlyaccess/alefhebrew.css);
+
+body{
+  font-family: "Alef Hebrew",
+               “Helvetica Neue”,
+               Helvetica,
+               Arial,
+               sans-serif !important;
+}
+ 
+ #search-sam-components-bar {	
+	padding-left: 305px;	
+ }
+ 
+ #search-button-td {
+	padding-left: 10px;
+ }
+ 
+ #search-button {
+	width: 143%;
+ }
+ 
+ 
+.logo_in_header {
+	width: 6%;
+}
+/* taken from bootstrap combined */
+div.bootstrap-datetimepicker-widget ul{
+	padding: 0px !important;
+}
+
+.btn{
+background-color: #f5f5f5;
+}
+
+
+[class^="icon-"], [class*=" icon-"] {
+display: inline-block;
+width: 14px;
+height: 14px;
+margin-top: 1px;
+line-height: 14px;
+vertical-align: text-top;
+background-image: url("/web/img/glyphicons-halflings.png");
+background-position: 14px 14px;
+background-repeat: no-repeat;
+}
+
+.icon-calendar {
+background-position: -192px -120px;
+}
+
+.icon-time {
+background-position: -48px -24px;
+}
+
+.icon-chevron-up {
+background-position: -288px -120px;
+}
+.icon-chevron-down {
+background-position: -313px -119px;
+}
+ .form-group {
+	width: 80%;
+	padding-right: 16px;
+} 
+/*style.css*/
+/* .bootstrap-datetimepicker-widget{
+	left: 895px !important;
+} */
+
+.gridStyle {
+    border: 1px solid rgb(212,212,212);
+    width: 100%; 
+    
+}
+
+.buttons_td {
+	width: 190px;
+}
+
+.buildings_buttons_td {
+	width: 100px;
+}
+
+.filter_list {
+	width: 100%;
+}
+
+.progress{
+	margin: 5px;
+}
+
+.datePickerLabel{
+	float: right;
+	font-weight: bold;
+}
+
+.datePickerComponent{	
+	top: -5px;	
+}
+
+.nav-tabs>li {
+  float: right !important;
+}
+
+.nav-tabs {
+	padding-right: 0px !important;
+}
+
+/* omer fix - adjust sb-admin to rtl*/
+#side-menu{
+	padding-right: 0px;
+}
+
+/* omer fix - adjust sb-admin to rtl*/
+.navbar-header{
+	float: right !important;
+}
+/* omer fix - adjust select2 to rtl*/
+.select2-results{
+	text-align: right;
+}
+.select2-input{
+	text-align: right;
+}
+
+#input-status-service {	
+	display: inline;
+}
+
+.mandatory {
+	  border: solid 1px #a94442 !important;
+}
+
+
+.focusedInput {
+    border-color: rgba(82,168,236,.8);
+    outline: 0;
+    outline: thin dotted \9;
+    -moz-box-shadow: 0 0 8px rgba(82,168,236,.6);
+    box-shadow: 0 0 8px rgba(82,168,236,.6) !important;
+}
+
+/* renter in orange */
+.renter {
+	color: rgb(255, 163, 0);	
+}
+
+/* owner in green */
+.owner {
+	color: rgb(42, 172, 42);
+	
+}
+
+/* defecto in red */
+.defecto {
+	color: red;	
+}
+
+.disabled {
+	color: gray;	
+}
+
+.header_font {
+	font-size: 1.5em;
+	text-shadow: 1px 1px 1px #CCC;	
+}
+
+.modified {	
+	background-color: #A3CAE4 !important;	
+}
+
+.data_required{
+	background-color: #E97A7E !important;
+}
+
+
+td.sam_td, .ng-table th {
+    padding: 5px !important;		
+	text-align: right !important;
+	border: 1px solid #ddd !important;	
+}
+
+th.sam_th {
+    padding: 5px !important;		
+	text-align: right !important;
+	border: 1px solid #ddd !important;	
+}  
+
+.highlight_td {
+	border: 2px solid #D55F68;
+}
+
+.ng-table {
+    border: 1px solid #CCC;
+	width: 100%;
+}
+
+.odd {
+	background-color: #f3f3f3;
+}
+/* http://stackoverflow.com/questions/18275857/turnoff-scrolling-within-angular-ui-ng-grid */
+.ngViewport{
+    height:auto !important;
+}
+.ngCanvas, .ngViewport, .ngRow, .ngFooterPanel, .ngTopPanel   {
+   width: 100% !important;
+}
+.ngRow {
+   border-bottom:none !important;
+}
+
+.ngCellText {
+    white-space: normal !important;
+}
+
+.bold {
+	font-weight: bold !important;	
+}
+
+.main_title {
+font-size: 33px;
+color: navy;
+text-align: center;
+}
+
+.sam_title {
+font-size: 33px;
+text-align: center;
+line-height: 2;
+}
+
+.sam_secondary_title {
+font-size: 20px;
+text-align: center;
+font-style: italic;
+}
+
+.sam_blue {
+	color: rgb(66, 139, 202);
+}
+
+.sam_yellow {
+	color: rgb(240, 173, 78);
+}
+
+.sam_red {
+	color: rgb(217, 83, 79);
+}
+
+.sam_green {
+	color: rgb(92, 184, 92);
+}
+
+.filter_on {
+	border: solid 2px rgb(92,184,92) !important;
+}
+
+.sam_blue_bold {
+	color: navy;
+}
+
+
+div[ng-cell] {
+text-align: right;
+}
+
+.ngHeaderText {
+text-align: right;
+}
+
+#mainLogo {
+width: 30%;
+}
+
+.popoverAlerts {
+border-radius: 15px !important;
+}
+/*http://stackoverflow.com/questions/17900868/bootstrap-popover-right-side-allignment*/
+/* .arrow{
+	margin-left: -104px !important;
+} */
+
+.popover-title{
+	text-align: right;
+}
+
+.popover-content{
+	text-align: right;
+}
+
+ .checkBoxAlerts {
+margin-top: 4px !important;
+} 
+
+/* algin type ahead to the right */
+.dropdown-menu{
+	right: 0px;
+}
+
+#sam-view{
+	padding-top: 40px;
+}
+
+#sam-search-table {
+	margin-right: 540px;
+}
+
+#searchInput{
+	border-bottom-left-radius: 4px;
+	border-top-left-radius: 4px;
+}
+/* #searchInput {
+	height: 34px;	
+	border: 1px solid #ccc;
+	padding: 7px;		
+	margin-right: 601px;
+	width: 50%;
+}
+
+
+#search-sam-components-bar ul{
+	margin-right: 601px;
+ } */
+
+#sam-navbar-content{
+	padding-top: 20px;
+	padding-bottom: 16px;
+}
+
+#searchButton {
+	border-bottom-left-radius: 14px;
+	border-top-left-radius: 14px;
+}
+.success {
+color: green;
+}
+
+.failure {
+color: red;
+}
+
+.plain {
+color: black;
+}
+
+.almost {
+color: #ed9c28;
+}
+
+
+.badge_success {
+	background: rgb(66, 139, 202) !important;	
+}
+
+.badge_warning {
+	background: rgb(240, 173, 78) !important;	
+}
+
+.badge_urgent {
+	background: rgb(217, 83, 79) !important;	
+}
+
+.badge_header{	
+	position: absolute !important;
+	top: -6px !important;
+}
+
+.font_huge {
+    font-size: 70px;
+}
+
+.font_medium {
+    font-size: 20px;
+}
+
+.font_large {
+    font-size: 30px;
+}
+
+.panel-green {
+    border-color: #5cb85c !important;
+}
+
+.panel-green .panel-heading {
+    border-color: #5cb85c !important;
+    color: #fff;
+    background-color: #5cb85c;
+}
+
+.panel-green a {
+    color: #5cb85c;
+}
+
+.panel-green a:hover {
+    color: #3d8b3d;
+}
+
+.panel-red {
+    border-color: #d9534f !important;
+}
+
+.panel-red .panel-heading {
+    border-color: #d9534f !important;
+    color: #fff;
+    background-color: #d9534f;
+}
+
+.panel-red a {
+    color: #d9534f;
+}
+
+.panel-red a:hover {
+    color: #b52b27;
+}
+
+.panel-yellow {
+    border-color: #f0ad4e !important;
+}
+
+.panel-yellow .panel-heading {
+    border-color: #f0ad4e !important;
+    color: #fff;
+    background-color: #f0ad4e;
+}
+
+.panel-yellow a {
+    color: #f0ad4e ;
+}
+
+.panel-yellow a:hover {
+    color: #df8a13;
+}
+
+.active>a, .active>a:hover {
+color: #fff;
+background-color: #428bca !important;
+}
+
+th.header {
+	;
+}
+
+/* styling for buildings table */
+#buildings_table .building_name {
+	width: 158px;
+}
+
+#buildings_table .building_ts {
+	width: 220px;
+}
+
+#buildings_table .building_debt {
+	width: 80px;
+}
+
+#buildings_table .building_checkbox {
+	width: 10px;
+}
+
+#buildings_table .building_percent .progress {
+	margin-bottom: 5px !important;
+}
+
+
+/* styling for tenants table */
+#tenants_table .tenant_checkbox {
+	width: 50px;
+}
+
+#tenants_table .building_name {
+	width: 140px;
+}
+
+#tenants_table .tenant_apartment {
+	width: 60px;
+}
+
+#tenants_table .tenant_name {
+	width: 150px;
+}
+
+#tenants_table .tenant_phones {
+	width: 180px;
+}
+
+#tenants_table .tenant_mails {
+	width: 180px;
+}
+
+#tenants_table .tenant_months {
+	;
+}
+
+
+#tenants_table .tenant_debts {
+	width: 70px;
+}
+
+#tenants_table .tenant_sms_checkbox {
+	width: 50px;
+}
+
+#tenants_table .tenant_mail_checkbox {
+	width: 50px;
+}
+
+#tenants_table .tenant_letter_checkbox {
+	width: 50px;
+}
+
+/* styling for service table */
+
+#service_table .service_checkbox {
+	width: 86px;
+}
+
+#service_table .service_status{
+	width: 110px;
+}
+#service_table .service_comment {
+	width: 360px;
+}
+
+#service_table .service_description {
+	width: 240px;
+}
+
+#service_table .service_time {
+	width: 150px;
+}
+
+#service_table .buttons_td {
+	width: 265px;
+}
+
+/* styling for payments table */
+
+#payments_table .payments_checkbox {
+	width: 86px;
+}
+
+#payments_table .payments_status{
+	width: 110px;
+}
+#payments_table .payments_comment {
+	width: 360px;
+}
+
+#payments_table .payments_description {
+	width: 240px;
+}
+
+#payments_table .payments_time {
+	width: 150px;
+}
+
+#payments_table .buttons_td {
+	width: 265px;
+}
+
+
+/* styling for history table */
+#alerts_table .alert_checkbox {
+	width: 60px;
+}
+
+#alerts_table .alert_type {
+	width: 50px;
+}
+
+.sam_column_checkbox {
+	margin-left: 4px !important;
+	margin-right: 15px !important;
+}
+
+#filter_checkbox_headers {
+	margin-bottom: 13px;
+	border: solid 1px #CCC;
+}
+
+#group_sms_container {
+	height: 300px;
+}
+
+#reminder_sms_container {
+	height: 190px;
+}
+
+.progress-bar-no-data {
+	background-color: rgb(232, 222, 222) !important;
+}
+
+/* this will push all angular gui modals to the right */
+/*.modal-content {
+	text-align: right;
+}*/
+
+.modal-title {
+	text-align: right;
+}
+
+
+/* bootstrap3 doesn't support submenus so I took the following from here:
+http://bootsnipp.com/snippets/featured/multi-level-dropdown-menu-bs3
+*/
+.dropdown-submenu {
+    position: relative;
+	text-align: right;
+}
+
+.dropdown-submenu>.dropdown-menu {
+    top: 0;
+    left: 100%;
+    margin-top: -6px;
+    margin-left: -1px;
+    -webkit-border-radius: 0 6px 6px 6px;
+    -moz-border-radius: 0 6px 6px;
+    border-radius: 0 6px 6px 6px;
+}
+
+.dropdown-submenu:hover>.dropdown-menu {
+    display: block;
+}
+
+.dropdown-submenu>a:after {
+    display: block;
+    content: " ";
+    float: right;
+    width: 0;
+    height: 0;
+    border-color: transparent;
+    border-style: solid;
+    border-width: 5px 0 5px 5px;
+    border-left-color: #ccc;
+    margin-top: 5px;
+    margin-right: -10px;
+}
+
+.dropdown-submenu:hover>a:after {
+    border-left-color: #fff;
+}
+
+.dropdown-submenu.pull-left {
+    float: right !important;
+}
+
+.dropdown-submenu.pull-left>.dropdown-menu {
+    right: 100%;
+    margin-left: 10px;
+    -webkit-border-radius: 6px 0 6px 6px;
+    -moz-border-radius: 6px 0 6px 6px;
+    border-radius: 6px 0 6px 6px;
+}
+
+.toggle-btn:not(.active) {
+	background-color: rgba(242, 23, 16, 0.39);
+}
+
+.upload_file {
+	background-color: #f5f5f5;
+	border: 1px solid #dcdcdc;
+	font-weight: bold;	
+	padding: 4px 4px 4px 8px;
+	max-width: 448px;
+}
+
+.remove_upload {
+	cursor: pointer;
+	float: left;
+	height: 16px;
+	margin-top: 1px;
+	opacity: .5;
+	width: 16px;
+}

@@ -1,0 +1,9 @@
+﻿<div>
+	<a href="/{{row.entity.based_on_file}}">
+		<i class="fa fa-download fa-fw colorInfo" ></i>
+	</a>
+	<a href ng-click="buildings.UpdateDataBase(row.entity.id)">
+		<i class="fa fa-refresh fa-fw colorInfo" ></i>
+	</a>
+	{{row.entity.last_updated.replace(' ', ' | ')}}
+</div>

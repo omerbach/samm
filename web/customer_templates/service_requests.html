@@ -1,0 +1,56 @@
+﻿<html>
+    <head>
+        <meta charset="utf-8">
+        <style>		
+        td, th {
+			padding: 5px !important;		
+			text-align: right !important;
+			border: 1px solid #ddd !important;
+			word-wrap: break-word !important;	
+			overflow:hidden !important;		
+			
+		} 
+		
+		tr:nth-child(even) {
+			background-color: #f3f3f3 !important;
+		}
+		
+		table {
+			border-collapse: collapse;
+			table-layout: fixed;
+			width: 100%;
+		}
+        </style>
+    </head>
+    <body dir="rtl">    
+        <div id="table_div" align="center">
+            <table>
+                <tbody>
+				
+                    <tr id="tenantHeader">
+						%for h in headers:
+                        <th>{{h.replace("'", "")}}</th>
+						%end                        
+                    </tr>
+                 
+                %for r in records:
+				<tr>
+					%for h in headers:
+						<td>{{r[h]}}</td>
+					%end
+				</tr>
+                %end
+                </tbody>
+            </table>
+			
+			<br/>
+			<hr/>
+			<br/>
+			<span style="float: right">
+				הופק באמצעות תוכנת <a href="http://www.samm.co.il" target="_blank" data-mce-href="http://www.samm.co.il">SAMM</a>
+			</span>
+        </div>      
+    </body>  
+
+	
+</html>

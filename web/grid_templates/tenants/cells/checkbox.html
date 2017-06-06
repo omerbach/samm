@@ -1,0 +1,4 @@
+<input ng-change="tenants.updateTenantAlerts(row.entity)" ng-model="row.entity.tenant_selected" class="checkBoxAlerts" type="checkbox"/>
+<a href="javascript:void(0);" ng-click="tenants.storeTenantDetailsForPopOver(row.entity)">
+	<i ng-class="{'disabled': row.entity.index !== tenants.chosenRowIndexForDemo}" class="fa-eye fa"></i>
+</a>

@@ -1,0 +1,4 @@
+﻿<button ng-repeat-start="(alert, details) in tenants.alerts" ng-disabled="!tenants.templateData[alert]" ng-click="tenants.saveAlertDetailsForPopOver(alert, row.entity)" rel="popover" class="btn btn-xs popoverAlerts" title="" data-original-title="התראה">		
+	<i ng-class="tenants.getRowAlertState(alert, row.entity)" class="fa"></i>
+</button>
+<input ng-repeat-end ng-change="tenants.updateAlertCount(alert, row.entity['send_'+alert])" ng-model="row.entity['send_'+alert]" class="checkBoxAlerts" type="checkbox"/>
