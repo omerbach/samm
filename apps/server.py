@@ -29,7 +29,7 @@ import utils
 import excel_helper
 import db_helper
 
-
+#comment
 FaIconOf = {
     'building': 'fa fa-building',
     'building_owners': 'fa fa-building owner',
