@@ -1,6 +1,7 @@
 from ConfigParser import SafeConfigParser
 import codecs
 
+#testing
 class Config(object):
     def __init__(self, configFile):
         self.parser = SafeConfigParser()
@@ -8,7 +9,7 @@ class Config(object):
         #config.ini file is encoded with utf-8 with bom (saved by notepad) so use utf_8_sig for SafeConfigParser to ignore it
         with codecs.open(configFile, 'r', encoding='utf_8_sig') as f:
             self.parser.readfp(f)        
-    #sdsdsdsdsdsdsdfsds
+    #sdsdsdsdsdsdsdfsds1111
     def __str__(self):
         pass
 
