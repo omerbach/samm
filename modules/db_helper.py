@@ -26,7 +26,7 @@ def GetBuildingDataBaseId(building):
             building_db_id, = res
     
     return building_db_id
-
+#eerer
 def UpdateExistingBuilding(building, building_db_id):
        
     info_db = sqlite3.connect(utils.DB_INFO)    
