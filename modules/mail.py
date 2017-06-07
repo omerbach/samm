@@ -18,7 +18,7 @@ def SendGrid(to, fromMail, subject, mailContent, html, attachments=[], inlineIma
     message.set_subject(subject)    
     message.set_html(mailContent)            
     message.set_from(fromMail)    
-    #rrr
+    #rrrhhh
     for attach in attachments:                
         attach = attach.replace('\\', '/')            
         message.add_attachment(os.path.basename(attach), 
