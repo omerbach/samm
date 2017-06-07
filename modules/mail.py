@@ -10,8 +10,9 @@ import sendgrid
 import utils
  
 #will use send grid only for attacments for now
-def SendGrid(to, fromMail, subject, mailContent, html, attachments=[], inlineImages=[]):        
-    sg = sendgrid.SendGridClient('omerbach@gmail.com', 'omerb707')
+def SendGrid(to, fromMail, subject, mailContent, html, attachments=[], inlineImages=[]):  
+    #to be called from a data base
+    sg = sendgrid.SendGridClient('#####', '#####')
     message = sendgrid.Mail()
     message.add_to(to)
     message.set_subject(subject)    
