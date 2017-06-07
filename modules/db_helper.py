@@ -14,7 +14,7 @@ def GetBuildingDataBaseId(building):
     building_db_id = 0
     info_db = sqlite3.connect(utils.DB_INFO)
             
-    #check if building exists by name
+    #check if building exists by name kk
     with info_db as connection:
         cursor=connection.cursor()
         cursor.execute('''
