@@ -9,11 +9,7 @@ class Config(object):
         #config.ini file is encoded with utf-8 with bom (saved by notepad) so use utf_8_sig for SafeConfigParser to ignore it
         with codecs.open(configFile, 'r', encoding='utf_8_sig') as f:
             self.parser.readfp(f)        
-<<<<<<< HEAD
-    #sdsdsdsdsdsdsdfsds1111
-=======
-    #sdsdsdsdsdsdsdfsds 123
->>>>>>> origin/master
+
     def __str__(self):
         pass
     #testing branches hhhhnnn again
