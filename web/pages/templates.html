@@ -1,0 +1,127 @@
+﻿
+<div class="row">
+	<div class="col-lg-12">
+		<div class="panel panel-default">
+			<div dir="rtl" class="panel-heading">								
+				
+				<a tooltip="טען נתונים שוב" href="javascript:void(0);" class="btn btn-default btn-lg" ng-click="htmlTemplates.GetTemplates()"><i ng-class="htmlTemplates.isLoading()" class="fa fa-refresh fa-lg"></i></a>
+				<a tooltip="הוסף תבנית חדשה" href="javascript:void(0);" class="btn btn-default btn-lg" ng-click="htmlTemplates.showAddForm = !htmlTemplates.showAddForm;"><i class="fa fa-plus-circle fa-lg"></i></a>																
+				
+			</div>						
+			
+						
+			<!-- /.panel-heading -->
+			<div class="panel-body">
+				<div collapse="!htmlTemplates.showAddForm" dir="rtl" class="row">						
+					<form  name="loginForm" novalidate>
+						<div class="form-group main_title">
+							<h1>{{htmlTemplates.session.name}}</h1>
+						</div>
+						<div class="form-group" ng-class="{'has-error': loginForm.name.$invalid}">
+							<input class="form-control" name="name" type="text" placeholder="שם תבנית" required ng-model="htmlTemplates.session.name" />							
+						</div>						
+						<div class="form-group">
+							<input class="form-control" name="comment" type="text" placeholder="הערות" ng-model="htmlTemplates.session.comment" />							
+						</div>
+						
+						<div class="form-group">
+						<tabset>
+							<tab>
+								<tab-heading><i class="fa fa-comment-o"></i></tab-heading>								
+								<textarea style="height: 300px; width: 100%" ng-model="htmlTemplates.session.sms_content"></textarea>
+							</tab>
+							<tab><tab-heading><i class="fa fa-envelope-o"></i></tab-heading>
+								<table>
+									<tr>
+										<td class="bold">
+											נושא:&nbsp; 
+										</td>
+										<td style="width: 100%;">
+											<input style="margin-top: 20px; margin-bottom: 20px;" placeholder="נושא אימייל" class="form-control" ng-model="htmlTemplates.session.mail_subject"></input>
+										</td>
+									</tr>
+								</table>								
+								<textarea class="tiny_mail"  ui-tinymce="htmlTemplates.mail_tinyConfig" ng-model="htmlTemplates.session.mail_content"></textarea>
+							</tab>
+							<tab><tab-heading><i class="fa fa-file-word-o"></i></tab-heading>								
+								<textarea class="tiny_letter"  ui-tinymce="htmlTemplates.letter_tinyConfig" ng-model="htmlTemplates.session.letter_content"></textarea>
+							</tab>
+						</tabset>
+						</div>
+						<div class="form-group">
+							<button ng-click="htmlTemplates.addNewTemplate()" type="submit" class="btn btn-primary" value="Login" title="Login" ng-disabled="!loginForm.$valid">
+								<span>סיים</span>
+							</button>
+							<button ng-click="htmlTemplates.session = {};" class="btn btn-warning">
+								<span>נקה</span>
+							</button>
+							<button ng-click="htmlTemplates.showAddForm = false;htmlTemplates.session = {};" class="btn btn-danger">
+								<span>בטל</span>
+							</button>							
+						</div>						
+					</form>					
+				</div>
+				
+				<table dir='rtl' ng-table="htmlTemplates.tableParams">				
+					<tr ng-repeat-start="row in htmlTemplates.templates_data"  ng-class-odd="'odd'" ng-class="{modified: row.modified_now}">						
+						<td data-title="'שם תבנית'" sortable="'name'" class="sam_td">							
+							{{row.name}} &nbsp;
+							<i ng-show="row.sms_content.length" class="fa fa-comment-o"></i>
+							<i ng-show="row.mail_content.length" class="fa fa-envelope-o"></i>
+							<i ng-show="row.letter_content.length" class="fa fa-file-word-o"></i>
+						</td>												
+						<td data-title="'הערה'" sortable="'comment'" class="sam_td">{{row.comment}}</td>
+						<td class="sam_td buttons_td">
+							<button tooltip="צפה בתוכן התבנית" ng-click="htmlTemplates.markTemplate(row.template_id)">
+								<i ng-class="{'fa-eye-slash': row.template_id == htmlTemplates.watchTemplate, 'fa-eye': row.template_id != htmlTemplates.watchTemplate}" class="fa fa-xs"></i>
+							</button>								
+							&nbsp;&nbsp
+							<button tooltip="ערוך תבנית" ng-click="htmlTemplates.editTemplate(row)">
+								<i  class="fa-pencil-square-o fa fa-xs"></i>
+							</button>
+							&nbsp;&nbsp
+							<button tooltip="העתק תבנית" ng-click="htmlTemplates.copyTemplate(row)">
+								<i  class="fa-copy fa fa-xs"></i>
+							</button>
+							&nbsp;&nbsp							
+							<button tooltip="איזה שיעמום, אתה לפח עכשיו, לתמיד!" ng-click="htmlTemplates.deleteTemplate(row.template_id)">
+								<i class="fa fa-trash-o fa-xs sam_red"></i>
+							</button>
+						</td>
+					</tr>
+					<tr ng-repeat-end ng-show="htmlTemplates.watchTemplate === row.template_id">
+						<td class="sam_td highlight_td" colspan="3">
+							<tabset>
+								<tab>
+									<tab-heading><i class="fa fa-comment-o"></i></tab-heading>									
+									{{row.sms_content}}
+								</tab>
+								<tab>
+									<tab-heading><i class="fa fa-envelope-o"></i></tab-heading>
+									<table>
+										<tr>
+											<td class="bold">
+												נושא:&nbsp; 
+											</td>
+											<td>	
+												{{row.mail_subject}}
+											</td>
+										</tr>
+									</table>
+									<hr/>									
+									<div ng-bind-html="htmlTemplates.showInnerHtml(row.mail_content)"></div>
+								</tab>
+								<tab>
+									<tab-heading><i class="fa fa-file-word-o"></i></tab-heading>
+									<span ng-bind-html="htmlTemplates.showInnerHtml(row.letter_content)"></span>
+								</tab>
+							</tabset>
+						</td>
+					</tr>
+				</table>												
+			</div>
+			<!-- /.panel-body -->
+		</div>
+		<!-- /.panel -->
+	</div>
+</div>

@@ -1,0 +1,111 @@
+﻿
+<div class="row">
+	<div class="col-lg-12">
+		<div class="panel panel-default">
+			<div dir="rtl" class="panel-heading">								
+				<a href="javascript:void(0);" class="btn btn-default btn-lg" ng-click="groupMail.refresh()">
+					<i ng-class="groupMail.isLoading()" class="fa fa-refresh fa-lg"></i>
+				</a>
+				<a ng-click="groupMail.sendGroupMail()" ng-class='{disabled: !groupMail.mail_content.length || !groupMail.subject.length || !groupMail.chosenEntities.length || !groupMail.worker_id.length}' href="javascript:void(0);" class="btn btn-default btn-lg">
+					<i class="fa fa-send-o fa-lg"></i>
+				</a>				
+				<label style="cursor: pointer;" for="file-input">								
+					<img src="web/img/attach.png"/>
+				</label>
+			</div>
+			
+			<div class="panel-body">
+				<div dir="rtl" class="row">	
+
+					<!-- <div dir="rtl" class="sam_title sam_blue_bold">אימייל קבוצתי</div>												 -->
+						
+					<div dir="rtl" ng-show="groupMail.showSendSummery" style="padding: 15px;">	
+						<alert type="success" close="groupMail.showSendSummery = false;">אימיילים נשלחו בהצלחה . <a ng-href="#history">צפו בהם עכשיו</a></alert>
+					</div>					
+					
+					<table dir="rtl" style="float: right; width: 100%; margin-right: 15px;">	
+						<tr style="margin-bottom: 10px;">
+							<td style="width: 37px; padding-bottom: 15px;">
+								מאת:
+							</td>
+							<td style="padding-bottom: 15px;">
+								<!-- https://github.com/angular-ui/ui-select2 -->
+								<!-- http://plnkr.co/edit/pFkY5f?p=preview -->
+								<!-- http://stackoverflow.com/questions/17022015/angular-ng-options-in-select2-settings-value-property -->
+								<div dir="rtl">	
+									<select
+										dir="rtl"
+										style="width: 98%"
+										id="availableWorkers"
+										ui-select2 = "{allowClear : true}"							
+										ng-model='groupMail.worker_id'
+										data-placeholder='בחר עובד חברה ממנו תישלח התזכורת'
+										name='worker'				
+										<!-- http://stackoverflow.com/questions/25694021/two-way-databinding-in-select2-for-angularjs-doesnt-work-in-angular-1-2-13#25694274 -->								
+										<option value=""></option>
+										<option dir="rtl" ng-repeat="worker in groupMail.availableWorkers" value="{{worker.worker_id}}">{{worker.name}} | {{worker.mails}}</option>
+									</select>
+								</div>
+							</td>				
+						</tr>
+						
+						<tr>
+							<td style="width: 37px;">
+								עבור:
+							</td>
+							<td>
+								<!-- https://github.com/angular-ui/ui-select2 -->
+								<!-- http://plnkr.co/edit/pFkY5f?p=preview -->
+								<!-- http://stackoverflow.com/questions/17022015/angular-ng-options-in-select2-settings-value-property -->
+								<div dir="rtl">	
+									<select
+										dir="rtl"
+										style="width: 98%"
+										id="entities"
+										ui-select2 = "{minimumInputLength : 2, maximumSelectionSize: 10}"
+										multiple
+										ng-model='groupMail.chosenEntities'
+										data-placeholder='נמענים: התחל להקליד שם בנין, דייר, בעל מקצוע או עובד חברה'
+										name='locations'							
+										<option value=""></option>
+										<option ng-repeat="entity in groupMail.entities" fa_icon="{{entity.icon}}" value="{{entity.type}}-{{entity.id}}">{{entity.name}}</option>
+									</select>
+								</div>
+							<td>
+						</tr>
+					</table>					
+				</div>
+				
+					<br/>
+					
+					<input dir="rtl" class="form-control" ng-model="groupMail.subject" placeholder="נושא אימייל"/>				
+					
+					<div style="padding-top: 14px;" dir="rtl" ng-repeat = "upload in groupMail.uploaded">
+						<div class="upload_file">
+							<a style="text-decoration: none; color: #15c;" ng-href="\download_file_from_server?folder={{groupMail.uploaded_folder}}&file={{upload.name}}" target="_blank">
+								<div dir="rtl" style="display: inline-block;">{{upload.name}}</div>
+								<div style="display: inline-block;color: #777;">({{upload.size}}K)</div>					
+							</a>
+							<i ng-click="groupMail.removeUploadedFileFromList($index)" class="fa fa-times fa-xs remove_upload"></i>
+						</div>
+					</div>
+					
+					<form id="myForm" action="/upload" method="post" enctype="multipart/form-data">											
+						<input id="file-input" style="display: none;" multiple type="file" name="data" onchange="angular.element(this).scope().groupMail.upload()"/>						
+					</form>
+					
+					<br/>
+										
+					<div auto-focus>
+						<textarea ui-tinymce="groupMail.tinyConfig" ng-model="groupMail.mail_content"></textarea>
+						<!-- <textarea id="group_mail_editor"></textarea> -->
+					</div>
+					
+			
+												                            
+			</div>
+			<!-- /.panel-body -->
+		</div>
+		<!-- /.panel -->
+	</div>
+</div>

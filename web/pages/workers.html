@@ -1,0 +1,112 @@
+﻿
+<div class="row">
+	<div class="col-lg-12">
+		<div class="panel panel-default">
+			<div dir="rtl" class="panel-heading">								
+				<div dir="ltr" class="col-md-3 datePickerComponent">
+					<span dir="rtl" class="datePickerLabel">
+					 תאריך סיום לחישוב קריאות משוייכות
+					</span>&nbsp;
+					<p class="input-group">					  
+					  <input ng-disabled="true" dir="rtl" ng-change="workers.GetWorkers()" type="text" class="form-control" datepicker-popup="dd-MM-yyyy" ng-model="workers.user.finish_dt" is-open="workers.opened_end" ng-required="true"  />
+					  <span class="input-group-btn">
+						<button type="button" class="btn btn-default" ng-click="workers.open_end($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+					  </span>
+					</p>
+				</div>
+				
+				<div dir="ltr" class="col-md-3 datePickerComponent">
+					<span dir="rtl" class="datePickerLabel">
+					 תאריך התחלה לחישוב קריאות משוייכות
+					</span>&nbsp;
+					<p class="input-group">
+					  <input ng-disabled="true" dir="rtl" ng-change="workers.GetWorkers()" type="text" class="form-control" datepicker-popup="dd-MM-yyyy" ng-model="workers.user.start_dt" is-open="workers.opened_start" ng-required="true"  />
+					  <span class="input-group-btn">
+						<button type="button" class="btn btn-default" ng-click="workers.open_start($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+					  </span>
+					</p>
+				</div>
+															
+					
+				<a tooltip="טען נתונים שוב" href="javascript:void(0);" class="btn btn-default btn-lg" ng-click="workers.GetWorkers()"><i ng-class="workers.isLoading()" class="fa fa-refresh fa-lg"></i></a>
+				<a tooltip="הוסף עובד חדש" href="javascript:void(0);" class="btn btn-default btn-lg" ng-click="workers.showAddForm = !workers.showAddForm; workers.session = {};"><i class="fa fa-plus-circle fa-lg"></i></a>																
+				
+			</div>						
+			
+						
+			<!-- /.panel-heading -->
+			<div class="panel-body">
+				<div dir="rtl" class="row">	
+					<!-- <div dir="rtl" class="sam_title sam_blue_bold">{{workers.staff.length}} עובדי חברה</div>				 -->
+					<form collapse="!workers.showAddForm" name="loginForm" novalidate>
+						<div class="form-group main_title">
+							<h1>{{workers.session.name}}</h1>
+						</div>
+						<div class="form-group" ng-class="{'has-error': loginForm.name.$invalid}">
+							<input class="form-control" name="name" type="text" placeholder="שם*" required ng-model="workers.session.name" />							
+						</div>
+						<div class="form-group" ng-class="{'has-error': loginForm.mails.$invalid}">
+							<input class="form-control" name="mails" type="text" placeholder="אימיילים מופרדים על ידי פסיקים*" required ng-model="workers.session.mails" />							
+						</div>
+						<div class="form-group" ng-class="{'has-error': loginForm.phones.$invalid}">
+							<input class="form-control" name="phones" type="text" placeholder="טלפונים מופרדים על ידי פסיקים*" required ng-model="workers.session.phones" />							
+						</div>
+						<div class="form-group">
+							<input class="form-control" name="title" type="text" placeholder="תפקיד" ng-model="workers.session.title" />							
+						</div>						
+						<div class="form-group">
+							<input class="form-control" name="person_id" type="text" placeholder="ת.ז" ng-model="workers.session.person_id" />							
+						</div>						
+						<div class="form-group">
+							<input class="form-control" name="fax" type="text" placeholder="מספר פקס" ng-model="workers.session.fax" />							
+						</div>
+						<div class="form-group">
+							<input class="form-control" name="address" type="text" placeholder="כתובת" ng-model="vsession.address" />							
+						</div>
+						<div class="form-group">
+							<input class="form-control" name="comment" type="text" placeholder="הערות" ng-model="workers.session.comment" />							
+						</div>
+						
+						<div class="form-group">
+							<button ng-click="workers.addNewWorker()" type="submit" class="btn btn-primary" value="Login" title="Login" ng-disabled="!loginForm.$valid">
+								<span>סיים</span>
+							</button>
+							<button ng-click="workers.session = {};" class="btn btn-warning">
+								<span>נקה</span>
+							</button>
+							<button ng-click="workers.showAddForm = false;workers.session = {};" class="btn btn-danger">
+								<span>בטל</span>
+							</button>							
+						</div>						
+					</form>
+				</div>
+
+				<table dir='rtl' ng-table="workers.tableParams">				
+					<tr ng-repeat="row in workers.staff"  ng-class-odd="'odd'" ng-class="{modified: row.modified_now}">													
+						<td data-title="'שם'"  sortable="'name'" class="bold sam_td">{{row.name}}</td>  											
+						<td data-title="'מקצוע'"  sortable="'title'" class="bold sam_td">{{row.title}}</td>						
+						<td data-title="'טלפונים'" sortable="'phones'" class="sam_td">{{row.phones}}</td>                                
+						<td data-title="'פקס'" sortable="'fax'" class="sam_td">{{row.fax}}</td>                                
+						<td data-title="'מיילים'" sortable="'mails'" class="sam_td">{{row.mails}}</td>
+						<td data-title="'כתובת'" sortable="'address'" class="sam_td">{{row.address}}</td>
+						<td data-title="'הערה'" sortable="'comment'" class="sam_td">{{row.comment}}</td>
+						
+						<td class="sam_td buttons_td">
+							<button tooltip="ערוך עובד חברה" ng-click="workers.editWorker(row)">
+								<i  class="fa-pencil-square-o fa fa-xs"></i></button>
+							&nbsp;&nbsp							
+							<button tooltip="איזה שיעמום, אתה לפח עכשיו, לתמיד!" ng-click="workers.deleteWorker(row.worker_id)">
+								<i class="fa fa-trash-o fa-xs sam_red"></i>
+							</button>
+						</td>				
+					</tr>												
+				</table>
+				
+				<br/>	
+				
+			</div>
+			<!-- /.panel-body -->
+		</div>
+		<!-- /.panel -->
+	</div>
+</div>

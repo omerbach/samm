@@ -1,0 +1,21 @@
+<!-- partials/page.html -->
+<h1>{{debts.buildingId}}</h1>
+<h1>{{debts.apartmentName}}</h1>
+
+<div class="jumbotron text-center">	
+	<h1>{{debts.elements.length}} debts</h1>
+	<table>
+		<tr>
+		<th>date</th>
+		<th>amount</th>
+		<th>type</th>
+		<th>description</th>		
+		</tr>
+		<tr ng-repeat="element in debts.elements | orderBy:'-id'">				
+			<td>{{element.date}}</td>
+			<td>{{element.amount}}</td>			
+			<td>{{element.debt_type}}</td>
+			<td>{{element.description}}</td>			
+		</tr>
+	</table>
+</div>

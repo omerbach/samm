@@ -4,7 +4,7 @@ import time
 import os
 import datetime
 import json
-import simplejson
+#import simplejson
 import sys
 import traceback
 import collections
@@ -2232,7 +2232,16 @@ def getServiceReminderData():
     tenants_from_building_id = params.tenants_from_building_id
     tenants_from_building_id = int(tenants_from_building_id) if len(tenants_from_building_id) else 0
 
-    service_data = resolveAlertTemplate(params.path, params.alert, json.loads(params.details), file(os.path.join(params.path, params.alert + '.htm')).read())
+    fff = os.path.join(params.path, params.alert + '.htm').replace('\\', '/')
+    #fff = 'web/customer_templates/service_reminder/sms.htm'
+
+    print
+    print
+    print fff, os.path.exists(fff)
+    print
+    print
+
+    service_data = resolveAlertTemplate(params.path, params.alert, json.loads(params.details), file(os.path.join(params.path, params.alert + '.htm').replace('\\', '/')).read())
     entities = GetMultiTypeElements(True, tenants_from_building_id)
     service_data["entities"] = entities
 
@@ -2380,8 +2389,8 @@ if __name__ == '__main__':
     utils.UpdateSamProcess(os.getpid())        
     db_helper.PrepareDataBases()
     print 'start: %s' % datetime.datetime.now()
-    db_data = excel_helper.BuildFromScratch(fromDir = utils.config.rootBuildingsDir)
-    db_helper.UpdateDataBase(db_data)
+    #db_data = excel_helper.BuildFromScratch(fromDir = utils.config.rootBuildingsDir)
+    #db_helper.UpdateDataBase(db_data)
     print 'end: %s' % datetime.datetime.now() 
 
-    bottle.run(port=os.getenv('SERVER_PORT'), host=os.getenv('SERVER_HOST'), server='paste')
+    bottle.run(port=3389, host='0.0.0.0', server='paste')

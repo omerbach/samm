@@ -1,0 +1,243 @@
+﻿
+<script type="text/ng-template" id="smart_checkbox_header.html">
+	<div class="btn-group">
+		<button class="btn btn-default dropdown-toggle btn-xs" data-toggle="dropdown">
+			<i ng-click="buildings.masterCheckBoxClick($event)" ng-class="{'fa-square-o': buildings.masterCheckBoxState == 1, 'fa-minus-square-o': buildings.masterCheckBoxState == 2, 'fa-check-square-o': buildings.masterCheckBoxState == 3}" class="fa fa-lg"></i> <span class="caret"></span>
+		</button>
+		<ul class="dropdown-menu">			
+			<li>
+				<a href="javascript:void(0);" ng-click="buildings.selectAllVisibleBuildings()"><i class="fa fa-building "></i>&nbsp;&nbsp;&nbsp;&nbsp;כולם</a>
+			</li>
+			<li>
+				<a href="javascript:void(0);" ng-click="buildings.clearSelections()"><i class="fa fa-building disabled "></i>&nbsp;&nbsp;&nbsp;&nbsp;אף אחד</a>
+			</li>
+			<li role="presentation" class="divider"></li>
+			<li role="presentation" class="dropdown-header">חיתוך לפי אחוזי גביה</li>
+			<li>
+				<a href="javascript:void(0);" ng-click="buildings.selectAllVisibleBuildingsWithPercentAbove75()"><i class="fa fa-building progress-bar-success"></i>&nbsp;&nbsp;&nbsp;&nbsp;גדולים מ-75%</a>
+			</li>
+			<li>
+				<a href="javascript:void(0);" ng-click="buildings.selectAllVisibleBuildingsWithPercentBetween50to75()"><i class="fa fa-building progress-bar-warning"></i>&nbsp;&nbsp;&nbsp;&nbsp;בין 50% ל- 75%</a>
+			</li>
+			<li>
+				<a href="javascript:void(0);" ng-click="buildings.selectAllVisibleBuildingsWithPercentTo50()"><i class="fa fa-building progress-bar-danger"></i>&nbsp;&nbsp;&nbsp;&nbsp;קטנים מ-50%</a>
+			</li>
+			
+			<li role="presentation" class="divider"></li>
+			<li role="presentation" class="dropdown-header">חיתוך לפי כינוי</li>
+			<li ng-repeat="nick_name in buildings.distinct_nick_names">
+				<a href="javascript:void(0);" ng-click="buildings.selectBuildingsByNickName(nick_name)"><i class="fa fa-building"></i>&nbsp;&nbsp;&nbsp;&nbsp;{{nick_name}}</a>
+			</li>
+			
+			
+		</ul>
+	</div>				
+</script>
+<div class="row">
+	<div class="col-lg-12">
+		<div class="panel panel-default">
+			<div dir="rtl" class="panel-heading">
+			
+				<div dir="ltr" class="col-md-3 datePickerComponent">
+					<span dir="rtl" class="datePickerLabel">
+					תאריך סיום לחישוב גבייה
+					</span>&nbsp;
+					<p class="input-group">					  
+					  <input ng-disabled="true" dir="rtl" ng-change="buildings.GetBuildings()" type="text" class="form-control" datepicker-popup="dd-MM-yyyy" ng-model="buildings.user.finish_dt" is-open="buildings.opened_end" ng-required="true"  />					  
+					  <span class="input-group-btn">
+						<button type="button" class="btn btn-default" ng-click="buildings.open_end($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+					  </span>					  
+					</p>
+					
+				</div>
+								
+				
+				<div dir="ltr" class="col-md-3 datePickerComponent">
+					<span dir="rtl" class="datePickerLabel">
+					תאריך התחלה לחישוב גבייה
+					</span>&nbsp;
+					<p class="input-group">
+					  <input ng-disabled="true" dir="rtl" ng-change="buildings.GetBuildings()" type="text" class="form-control" datepicker-popup="dd-MM-yyyy" ng-model="buildings.user.start_dt" is-open="buildings.opened_start" ng-required="true"  />
+					  <span class="input-group-btn">
+						<button type="button" class="btn btn-default" ng-click="buildings.open_start($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+					  </span>
+					</p>
+				</div>
+							
+				<div dir="rtl" class="col-md-3" style="margin-top: -3px;">
+					<span dir="rtl" style="font-weight: bold;">
+					 סוג חוב
+					</span>&nbsp;					
+					<select ng-change="buildings.GetBuildings()" ng-model="buildings.user.debt_type" ng-options="debt_type for debt_type in buildings.user.debt_types" style="display: block; height: 31px; width: 100%">
+					</select>
+				</div>
+				
+				<!-- <div style="top: 14px;" dir="ltr" class="col-md-3 btn-group">					
+					<label ng-change="buildings.GetBuildings()" class="toggle-btn btn btn-danger" ng-model="buildings.user.debt_type" btn-radio="'1'" uncheckable>מיסי ועד</label>
+					<label ng-change="buildings.GetBuildings()" class="toggle-btn btn btn-danger" ng-model="buildings.user.debt_type" btn-radio="'2'" uncheckable>חובות מיוחדים</label>        					
+				</div>
+				 -->
+				<a tooltip="טען נתונים שוב (טעינה מחדש תנקה את כל הבחירות שלכם)" class="btn btn-default btn-lg" ng-click="buildings.GetBuildings()" ><i ng-class="buildings.isLoading()" class="fa fa-refresh fa-lg"></i></a>
+				
+				<a tooltip="פותח או סוגר את בקרת השליטה בעמודות להצגה בטבלה" href="javascript:void(0);" class="btn btn-default btn-lg" ng-click="buildings.showColumnPanel = !buildings.showColumnPanel"><i class="fa fa-list-ul fa-lg"></i></a>
+				
+				<div ng-show="buildings.total_buildings" tooltip="מגוון פעולות שניתן לבצע על הרשומות שבחרתם" class="btn-group">
+					<button class="btn btn-default dropdown-toggle btn-lg" data-toggle="dropdown">
+						<i class="fa fa-lg fa-building "></i>
+						<span class="caret"></span>	
+						<span class="badge_success badge badge_header">{{buildings.total_buildings}}</span>
+					</button>
+					<ul class="dropdown-menu">
+						<li>
+							<a href="javascript:void(0);" ng-click="buildings.user.exportHtmlTableToPdf('buildings_table', 'lskd')"><i class="fa fa-file-pdf-o"></i>&nbsp;&nbsp;&nbsp;&nbsp;יצא לקובץ pdf</a>
+						</li>	
+						
+						<li class="dropdown-submenu pull-left">
+							<a href="javascript:void(0);"><i class="fa fa-envelope-o"></i>&nbsp;&nbsp;&nbsp;&nbsp;שלח מייל</a>
+							<ul href="javascript:void(0);" class="dropdown-menu">
+								<li><a href="javascript:void(0);" ng-click="buildings.sendMail('')"><i class="fa fa-building"></i>&nbsp;&nbsp;&nbsp;&nbsp;כולם</a></li>								
+								<li><a href="javascript:void(0);" ng-click="buildings.sendMail('owners')"><i class="fa fa-building owner"></i>&nbsp;&nbsp;&nbsp;&nbsp;בעלים</a></li>
+								<li><a href="javascript:void(0);" ng-click="buildings.sendMail('renters')"><i class="fa fa-building renter"></i>&nbsp;&nbsp;&nbsp;&nbsp;שוכרים</a></li>
+								<li><a href="javascript:void(0);" ng-click="buildings.sendMail('defacto')"><i class="fa fa-building defecto"></i>&nbsp;&nbsp;&nbsp;&nbsp;דיירים</a></li>
+							</ul>
+						</li>
+						
+						<li class="dropdown-submenu pull-left">
+							<a href="javascript:void(0);"><i class="fa fa-comment-o"></i>&nbsp;&nbsp;&nbsp;&nbsp;שלח סמס</a>
+							<ul href="javascript:void(0);" class="dropdown-menu">
+								<li><a href="javascript:void(0);" ng-click="buildings.sendSms('')"><i class="fa fa-building"></i>&nbsp;&nbsp;&nbsp;&nbsp;כולם</a></li>								
+								<li><a href="javascript:void(0);" ng-click="buildings.sendSms('owners')"><i class="fa fa-building owner"></i>&nbsp;&nbsp;&nbsp;&nbsp;בעלים</a></li>
+								<li><a href="javascript:void(0);" ng-click="buildings.sendSms('renters')"><i class="fa fa-building renter"></i>&nbsp;&nbsp;&nbsp;&nbsp;שוכרים</a></li>
+								<li><a href="javascript:void(0);" ng-click="buildings.sendSms('defacto')"><i class="fa fa-building defecto"></i>&nbsp;&nbsp;&nbsp;&nbsp;דיירים</a></li>
+							</ul>
+						</li>
+			  						
+						<li>
+							<a href="javascript:void(0);" ng-click="buildings.showBuildingsData()"><i class="fa fa-male"></i>&nbsp;&nbsp;&nbsp;&nbsp;הצג דיירים</a>
+						</li>
+						
+						<li ng-class="{disabled: buildings.total_buildings != 1}">
+							<a href="javascript:void(0);" ng-click="buildings.CreateBuildingsServiceRequest()"><i class="fa fa-suitcase"></i>&nbsp;&nbsp;&nbsp;&nbsp;פתח קריאת שירות</a>
+						</li>
+						
+						<li>
+							<a href="javascript:void(0);" ng-click="buildings.UpdateBuildingsDataBase()"><i class="fa fa-database"></i>&nbsp;&nbsp;&nbsp;&nbsp;קרא וטען נתונים</a>
+						</li>
+						<li>
+							<a href="javascript:void(0);" ng-click="buildings.deleteBuildings()"><i class="fa fa-trash-o"></i>&nbsp;&nbsp;&nbsp;&nbsp;מחק </a>
+						</li>
+					</ul>
+				</div>
+				
+					
+			</div>
+			<!-- /.panel-heading -->
+			<div class="panel-body">	
+				<input tooltip="התחילו להקליד ורשימת הבניינים תצטמצם, שימושי מאוד להקליד שם של עיר לדוגמא ובקלות לראות את כמות הבניינים מאותה העיר" dir="rtl" ob-enter="buildings.selectAllVisibleBuildings()" class="filter_list form-control" auto-focus type="text" ng-model="buildings.filterOptions.filterText" placeholder="התחל להקליד ורשימת הבניינים תתצמצם בהתאם">
+				
+				
+				<div ng-show="buildings.visibleBuildings.length" >					
+					<div class="sam_title" dir="rtl">
+						<!-- <div dir="rtl" class="sam_blue_bold">{{buildings.UpdateBuildingDescription()}}</div> -->
+						
+						<span dir="rtl" class="sam_blue_bold">{{buildings.UpdateBuildingDescription()}}</span><span class="sam_blue"> | </span>
+						<span dir="rtl" class="sam_red">₪{{buildings.TotalBuildingsDebts() | number}} חובות</span><span class="sam_blue"></span>						
+					</div>
+										
+				</div>
+
+				<div dir="rtl" class="row">						
+					<form collapse="!buildings.showAddForm" name="loginForm" novalidate>
+						<div class="form-group main_title">
+							<h1>{{buildings.session.name}}</h1>
+						</div>									
+						<div class="form-group">
+							<input class="form-control" name="building_nick_name" type="text" placeholder="כינוי" typeahead="data.id as data.name for data in buildings.guessBuildingNickName($viewValue)" typeahead-loading="loadingLocations" ng-model="buildings.session.nick_name" />							
+						</div>																		
+						<div class="form-group">
+							<button ng-click="buildings.addNewBuilding()" type="submit" class="btn btn-primary" value="Login" title="Login" ng-disabled="!loginForm.$valid">
+								<span>סיים</span>
+							</button>
+							<button ng-click="buildings.session = {};" class="btn btn-warning">
+								<span>נקה</span>
+							</button>
+							<button ng-click="buildings.showAddForm = false;buildings.session = {};" class="btn btn-danger">
+								<span>בטל</span>
+							</button>							
+						</div>						
+					</form>
+				</div>
+				
+				<div id="filter_checkbox_headers" collapse="!buildings.showColumnPanel">
+					<span style="margin-right: 10px; font-weight: bold;">הצג\הסתר עמודות:</span>					
+					<input class="sam_column_checkbox" ng-model="buildings.column_building_name" type="checkbox"/>שם בנין |
+					<input class="sam_column_checkbox" ng-model="buildings.column_nick_name" type="checkbox"/>כינוי |
+					<input class="sam_column_checkbox" ng-model="buildings.column_based_on_file" type="checkbox"/>קבצי מקור |					
+					<input class="sam_column_checkbox" ng-model="buildings.column_updated" type="checkbox"/>עודכן לאחרונה |
+					<input class="sam_column_checkbox" ng-model="buildings.column_debt" type="checkbox"/>חוב |
+					<input class="sam_column_checkbox" ng-model="buildings.column_percentage" type="checkbox"/>אחוזי גביה					
+				</div>
+
+				<table id="buildings_table" dir='rtl' ng-table="buildings.tableParams">
+					<tr ng-repeat="row in buildings.visibleBuildings = (buildings.elements  | filter:buildings.filterOptions.filterText)"  ng-class-odd="'odd'" ng-class="{modified: row.building_selected, missing: row.missing_files}">
+					
+						<td header="'smart_checkbox_header.html'" class="sam_td building_checkbox">
+							<input ng-model="row.building_selected" class="checkBoxAlerts" type="checkbox"/>
+						</td>
+						
+						<td ng-show="buildings.column_building_name" data-title="'שם בנין'" sortable="'name'" class="sam_td building_name">
+							<a tooltip="הקלקה על בנין זה תעביר אתכם לעמוד הדיירים של אותו בנין" ng-href="#tenants?buildingIds={{row.id}}">{{row.name}}</a>
+						
+						</td>
+							<td ng-show="buildings.column_nick_name" dir="ltr"  data-title="'כינוי'" sortable="'nick_name'" class="sam_td building_debt">
+							<span>{{row.nick_name}}</span>
+						</td>
+						
+						<td ng-show="buildings.column_based_on_file" data-title="'קבצי מקור'" sortable="'based_on_file'" class="sam_td building_based_on_file">
+							{{row.based_on_file}}
+						</td>
+						
+						<td ng-show="buildings.column_updated" data-title="'עודכן לאחרונה'" sortable="'last_updated'" class="sam_td building_ts">
+							<div>
+								<!-- <a href ng-click="buildings.DownloadBuildingFiles(row)">
+									<i tooltip="הורד עותק של הקובץ שמייצג את הבנין" class="fa fa-download fa-fw colorInfo" ></i>
+								</a> -->
+								<a href ng-click="buildings.UpdateDataBase(row, true)">								
+									<i ng-class="{'fa-spin': row.loading}" tooltip="קרא נתונים מהקובץ שמייצג את בנין זה וטען אותם למערכת" class="fa fa-database fa-fw colorInfo" ></i>
+								</a>
+								{{row.last_updated.replace(' ', ' | ')}}
+							</div>
+						</td>
+						
+						<td ng-show="buildings.column_debt" dir="ltr"  data-title="'חוב'" sortable="'total_debt'" class="sam_td building_debt">
+							<span>{{row.total_debt | number:0}} ₪</span>
+						</td>
+						
+						<td ng-show="buildings.column_percentage" dir="rtl" data-title="'אחוזי גביה'" sortable="'percent'" class="sam_td building_percent">
+							<div tooltip="אחוזי גביה: {{row.percent | number:2}}" dir="rtl" class="progress" ng-class="{'progress-bar-no-data': row.percent == -1}">
+								<div dir="rtl" ng-class="buildings.progressBarClass(row.percent)" class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="{{row.percent | number:0}}" aria-valuemin="0" aria-valuemax="100" style="width: {{row.percent | number:0}}%">
+									<span dir="rtl">{{row.percent | number:1}}%</span>
+								</div>
+							</div>
+						</td>											
+						
+						<td class="sam_td buildings_buttons_td">
+							<button tooltip="ערוך בנין" ng-click="buildings.editBuilding(row)">
+								<i  class="fa-pencil-square-o fa fa-xs"></i></button>
+							&nbsp;&nbsp							
+							<button tooltip="איזה שיעמום, אתה לפח עכשיו, לתמיד!" ng-click="buildings.deleteBuildings(row.id)">
+								<i class="fa fa-trash-o fa-xs sam_red"></i>
+							</button>
+						</td>			
+						
+					</tr>					 
+				</table>
+				
+				<iframe style="visibility:hidden;display:none" ng-repeat="building_file in buildings.building_files" src="{{buildings.CreateUrl(building_file)}}"> </iframe>
+                            
+			</div>
+			<!-- /.panel-body -->
+		</div>
+		<!-- /.panel -->
+	</div>
+</div>

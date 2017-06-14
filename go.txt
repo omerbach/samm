@@ -1,0 +1,3 @@
+#!/bin/bash
+export PYTHONPATH=./modules
+python apps/server.py

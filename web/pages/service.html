@@ -1,0 +1,488 @@
+﻿<script type="text/ng-template" id="smart_checkbox_header.html">
+	<div  class="btn-group">
+		<button class="btn btn-default dropdown-toggle btn-xs" data-toggle="dropdown">
+			<i ng-click="service.masterCheckBoxClick($event)" ng-class="{'fa-square-o': service.masterCheckBoxState == 1, 'fa-minus-square-o': service.masterCheckBoxState == 2, 'fa-check-square-o': service.masterCheckBoxState == 3}" class="fa fa-lg"></i> <span class="caret"></span>						
+		</button>
+		<ul class="dropdown-menu">
+			<li>
+				<a href="javascript:void(0);" ng-click="service.selectAll()"><i class="fa fa-wrench "></i>&nbsp;&nbsp;&nbsp;&nbsp;כולם</a>
+			</li>
+			<li>
+				<a href="javascript:void(0);" ng-click="service.clearSelections()"><i class="fa fa-wrench disabled "></i>&nbsp;&nbsp;&nbsp;&nbsp;אף אחד</a>
+			</li>
+			<li role="presentation" class="divider"></li>
+			<li role="presentation" class="dropdown-header">חיתוך לפי סטטוס</li>
+			<li>
+				<a href="javascript:void(0);" ng-click="service.selectServiceByStatus(1)"><i class="fa fa-wrench failure "></i>&nbsp;&nbsp;&nbsp;&nbsp;פתוח</a>
+			</li>
+			<li>
+				<a href="javascript:void(0);" ng-click="service.selectServiceByStatus(2)"><i class="fa fa-wrench almost "></i>&nbsp;&nbsp;&nbsp;&nbsp;בטיפול</a>
+			</li>
+			<li>
+				<a href="javascript:void(0);" ng-click="service.selectServiceByStatus(3)"><i class="fa fa-wrench success "></i>&nbsp;&nbsp;&nbsp;&nbsp;סגור</a>
+			</li>																		
+		</ul>
+	</div>
+</script>
+
+<script type="text/ng-template" id="myConfirmationModalContent.html">
+        <div class="modal-header">
+            <h3 class="modal-title">{{service_request.description}} : שינוי סטטוס ל{{new_status}}</h3>
+        </div>
+        <div class="modal-body">
+			<div>,פעולה זו תשנה את הסטטוס של קריאת שירות מספר {{service_request.service_id}} ל<b>{{new_status}}</b></div>            
+			<div>.כתוצאה מכך ייתכן וזמני הפתיחה והסגירה ישתנו בהתאם לסטטוס החדש </div>  
+			<br/>
+			<div>.אנא אשר או בטל פעולה זו</div>            
+        </div>
+        <div dir="rtl" class="modal-footer">
+            <button class="btn btn-primary" ng-click="ok()">אישור</button>
+            <button class="btn btn-danger" ng-click="cancel()">ביטול</button>
+        </div>
+</script>
+
+<script type="text/ng-template" id="myMultipleConfirmationModalContent.html">
+        <div class="modal-header">
+            <h3 class="modal-title">שינוי מספר קריאות שירות  יחדיו לסטטוס {{new_status}}</h3>
+        </div>
+        <div class="modal-body">
+			<div>פעולה זו תשנה את הסטטוס של {{service_requests.length}} קריאות שירות ל<b>{{new_status}}</b></div>            
+			<div>.כתוצאה מכך ייתכן וזמני הפתיחה והסגירה ישתנו בהתאם לסטטוס החדש </div>  
+			<br/>
+			<div>.אנא אשר או בטל פעולה זו</div>            
+        </div>
+        <div dir="rtl" class="modal-footer">
+            <button class="btn btn-primary" ng-click="ok()">אישור</button>
+            <button class="btn btn-danger" ng-click="cancel()">ביטול</button>
+        </div>
+</script>
+
+<script type="text/ng-template" id="myServiceReminderModalContent.html">
+        <div class="modal-header">
+            <h3 class="modal-title">{{service_request.description}} : שליחת סמס תזכורת ל{{professional_name}}</h3>
+        </div>		
+        <div class="modal-body">
+		<table dir="rtl" style="float: right; width: 100%">	
+			<tr style="margin-bottom: 10px;">
+				<td style="width: 37px; padding-bottom: 15px;">
+					מאת:
+				</td>
+				<td style="padding-bottom: 15px;">
+					<!-- https://github.com/angular-ui/ui-select2 -->
+					<!-- http://plnkr.co/edit/pFkY5f?p=preview -->
+					<!-- http://stackoverflow.com/questions/17022015/angular-ng-options-in-select2-settings-value-property -->
+					<div dir="rtl">	
+						<select
+							dir="rtl"
+							style="width: 100%"
+							id="availableWorkers"
+							ui-select2 = "{allowClear : true}"							
+							ng-model='worker_id'
+							data-placeholder='בחר עובד חברה ממנו תישלח התזכורת'
+							name='worker'				
+							<!-- http://stackoverflow.com/questions/25694021/two-way-databinding-in-select2-for-angularjs-doesnt-work-in-angular-1-2-13#25694274 -->								
+							<option value=""></option>
+							<option dir="rtl" ng-repeat="worker in workers" value="{{worker.worker_id}}">{{worker.name}} | {{worker.phones}}</option>
+						</select>
+					</div>
+				</td>				
+			</tr>
+			
+			<tr>
+				<td style="width: 37px;">
+					עבור:
+				</td>
+				<td>
+					<!-- https://github.com/angular-ui/ui-select2 -->
+					<!-- http://plnkr.co/edit/pFkY5f?p=preview -->
+					<!-- http://stackoverflow.com/questions/17022015/angular-ng-options-in-select2-settings-value-property -->
+					<div dir="rtl">	
+						<select
+							dir="rtl"
+							style="width: 100%"
+							id="reminder_sms_recipients"
+							ui-select2 = "{minimumInputLength : 1}"
+							multiple
+							ng-model='chosenEntities'
+							data-placeholder='נמענים: התחל להקליד שם בנין, דייר, בעל מקצוע או עובד חברה'
+							name='locations'							
+							<option value=""></option>
+							<option ng-repeat="entity in entities" fa_icon="{{entity.icon}}" value="{{entity.type}}-{{entity.id}}">{{entity.name}}</option>						   
+						</select>
+					</div>
+				<td>
+			</tr>
+		</table>
+			<br/>
+			
+			<div auto-focus dir="rtl" style="margin-top: 70px;">
+					<textarea placeholder="הקלד כאן תוכן הודעת סמס" id="reminder_sms_container" ng-model="sms_content" class="form-control"></textarea>
+			</div>
+			<br/>
+			
+        </div>
+        <div dir="rtl" class="modal-footer">
+            <button ng-disabled="!worker_id.length || !chosenEntities.length || !sms_content.length" class="btn btn-primary" ng-click="ok({'sms_content': sms_content, 'chosenEntities': chosenEntities, 'worker_id': worker_id, 'building_name': building_name, 'service_id': service_request.service_id})">שלח</button>
+            <button class="btn btn-danger" ng-click="cancel()">ביטול</button>
+        </div>
+</script>
+
+<script type="text/ng-template" id="myMultipleServiceReminderModalContent.html">
+        <div class="modal-header">
+            <h3 class="modal-title">שליחת סמס תזכורת ל: {{service_requests.length}} בעלי מקצוע</h3>
+        </div>		
+        <div class="modal-body">
+			<table dir="rtl" style="float: right; width: 100%">	
+				<tr style="margin-bottom: 10px;">
+					<td style="width: 37px; padding-bottom: 15px;">
+						מאת:
+					</td>
+					<td style="padding-bottom: 15px;">
+						<!-- https://github.com/angular-ui/ui-select2 -->
+						<!-- http://plnkr.co/edit/pFkY5f?p=preview -->
+						<!-- http://stackoverflow.com/questions/17022015/angular-ng-options-in-select2-settings-value-property -->
+						<div dir="rtl">	
+							<select
+								dir="rtl"
+								style="width: 100%"
+								id="availableWorkers"
+								ui-select2 = "{allowClear : true}"							
+								ng-model='worker_id'
+								data-placeholder='בחר עובד חברה ממנו תישלח התזכורת'
+								name='worker'				
+								<!-- http://stackoverflow.com/questions/25694021/two-way-databinding-in-select2-for-angularjs-doesnt-work-in-angular-1-2-13#25694274 -->								
+								<option value=""></option>
+								<option dir="rtl" ng-repeat="worker in workers" value="{{worker.worker_id}}">{{worker.name}} | {{worker.phones}}</option>
+							</select>
+						</div>
+					</td>				
+				</tr>			
+			</table>			
+        </div>
+		
+        <div dir="rtl" class="modal-footer">
+            <button ng-disabled="!worker_id.length" class="btn btn-primary" ng-click="ok({'service_requests': service_requests, 'worker_id': worker_id})">שלח</button>
+            <button class="btn btn-danger" ng-click="cancel()">ביטול</button>
+        </div>
+</script>
+
+<div class="row">
+	<div class="col-lg-12">
+		<div class="panel panel-default">
+			<div dir="rtl" class="panel-heading">								
+				<div dir="ltr" class="col-md-3 datePickerComponent">
+					<span dir="rtl" class="datePickerLabel">
+					 תאריך סיום להצגת קריאות
+					</span>&nbsp;
+					<p class="input-group">					  
+					  <input ng-disabled="true" dir="rtl" ng-change="service.GetServiceRequests()" type="text" class="form-control" datepicker-popup="dd-MM-yyyy" ng-model="service.user.finish_dt" is-open="service.opened_end" ng-required="true"  />
+					  <span class="input-group-btn">
+						<button type="button" class="btn btn-default" ng-click="service.open_end($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+					  </span>
+					</p>
+				</div>
+				
+				<div dir="ltr" class="col-md-3 datePickerComponent">
+					<span dir="rtl" class="datePickerLabel">
+					 תאריך התחלה להצגת קריאות
+					</span>&nbsp;
+					<p class="input-group">
+					  <input ng-disabled="true" dir="rtl" ng-change="service.GetServiceRequests()" type="text" class="form-control" datepicker-popup="dd-MM-yyyy" ng-model="service.user.start_dt" is-open="service.opened_start" ng-required="true"  />
+					  <span class="input-group-btn">
+						<button type="button" class="btn btn-default" ng-click="service.open_start($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+					  </span>
+					</p>
+				</div>
+															
+					
+				<a tooltip="טען נתונים שוב (טעינה מחדש תנקה את כל הבחירות שלכם)" href="javascript:void(0);" class="btn btn-default btn-lg" ng-click="service.GetServiceRequests()"><i ng-class="service.isLoading()" class="fa fa-refresh fa-lg"></i></a>
+				<a tooltip="הוסף קריאת שירות חדשה" href="javascript:void(0);" class="btn btn-default btn-lg" ng-click="service.showAddForm = !service.showAddForm; service.reset_session();"><i class="fa fa-plus-circle fa-lg"></i></a>
+				<a tooltip="פותח או סוגר את בקרת השליטה בעמודות להצגה בטבלה" href="javascript:void(0);" class="btn btn-default btn-lg" ng-click="service.showColumnPanel = !service.showColumnPanel"><i class="fa fa-list-ul fa-lg"></i></a>
+				
+				<div ng-show="service.total_services" tooltip="מגוון פעולות שניתן לבצע על הרשומות שבחרתם" class="btn-group">
+					<button class="btn btn-default dropdown-toggle btn-lg" data-toggle="dropdown">
+						<i class="fa fa-lg fa-wrench"></i>
+						<span class="caret"></span>	
+						<span class="badge_success badge badge_header">{{service.total_services}}</span>
+					</button>
+					<ul class="dropdown-menu">	
+						<li>
+							<a href="javascript:void(0);" ng-click="service.user.exportHtmlTableToPdf('service_table', 'lskd')"><i class="fa fa-file-pdf-o"></i>&nbsp;&nbsp;&nbsp;&nbsp;יצא לקובץ pdf</a>
+						</li>						
+						<li>
+							<a href="javascript:void(0);" ng-click="service.ChangeMultipleStatuses(1)"><i class="fa fa-wrench failure "></i>&nbsp;&nbsp;&nbsp;&nbsp;העבר לפתוח</a>
+						</li>
+						<li>
+							<a href="javascript:void(0);" ng-click="service.ChangeMultipleStatuses(2)"><i class="fa fa-wrench almost "></i>&nbsp;&nbsp;&nbsp;&nbsp;העבר לבטיפול</a>
+						</li>
+						<li>
+							<a href="javascript:void(0);" ng-click="service.ChangeMultipleStatuses(3)"><i class="fa fa-wrench success "></i>&nbsp;&nbsp;&nbsp;&nbsp;העבר לסגור</a>
+						</li>	
+						<li class="dropdown-submenu pull-left">
+							<a href="javascript:void(0);"><i class="fa fa-envelope-o"></i>&nbsp;&nbsp;&nbsp;&nbsp;תזכורת סמס</a>
+							<ul href="javascript:void(0);" class="dropdown-menu">
+								<li><a href="javascript:void(0);" ng-click="service.multipleServiceReminders()"><i class="fa fa-suitcase"></i>&nbsp;&nbsp;&nbsp;&nbsp;בעל מקצוע</a></li>								
+								<!-- <li><a href="javascript:void(0);" ng-click="service.sendServiceReminders()"><i class="fa fa-male"></i>&nbsp;&nbsp;&nbsp;&nbsp;דייר</a></li>								 -->
+							</ul>
+						</li>
+						<li>
+							<a href="javascript:void(0);" ng-click="service.deleteServiceRequests()"><i class="fa fa-trash-o"></i>&nbsp;&nbsp;&nbsp;&nbsp;מחק </a>
+						</li>
+					</ul>
+				</div>
+				
+				
+			</div>						
+			
+						
+			<!-- /.panel-heading -->
+			<div class="panel-body">
+				<div dir="rtl" class="row">						
+				
+					<!-- <div dir="rtl" class="sam_title sam_blue_bold">{{service.availableServiceRequests.length}} קריאות שירות</div>						 -->
+
+					<!-- <div class="col-md-3">											
+						<div class="class="btn-group">															
+							<button tooltip="הצג קריאות שירות בסטטוס זה" class="btn btn-default dropdown-toggle btn-lg" data-toggle="dropdown">
+								<span class="caret"></span><i ng-class="{'plain': service.filterStatus==0, 'failure': service.filterStatus==1, 'almost': service.filterStatus==2, 'success': service.filterStatus==3}" class="fa fa-wrench"></i> 
+							</button>
+							<ul class="dropdown-menu">
+								<li ng-repeat="(statusId, statusDesc) in service.statusesWithIdle">
+									<a style="text-align: right;" href="javascript:void(0);" ng-click="service.filterStatus = statusId; service.GetServiceRequests()"><i ng-class="{'failure': statusId==1, 'almost': statusId==2, 'success': statusId==3}" class="fa fa-wrench"></i>&nbsp;&nbsp;&nbsp;&nbsp; הצג קריאות שירות בסטטוס: {{statusDesc}}</a>
+								</li>								
+							</ul>								
+						</div>						
+					</div> -->
+					
+					<div ng-show="!service.showAddForm" class="col-md-3">	
+						<input ng-class="{'filter_on': service.professionalData.name.length }" tooltip="משלים אוטומטית בעלי מקצוע ,לפנק, לפנק, לפנק" ng-change="service.AutoCompleteChange(service.professionalData)" typeahead-on-select="service.GetServiceRequests()" type="text" ng-model="service.professionalData" placeholder="התחל להקליד בעל מקצוע" typeahead="data as data.name for data in service.guessProfessional($viewValue)" typeahead-loading="loadingLocations" class="form-control">
+					</div>
+					
+					<div ng-show="!service.showAddForm" class="col-md-3">	
+						<input ng-class="{'filter_on': service.tenantData.name.length }" tooltip="משלים אוטומטית דיירים ,לפנק, לפנק, לפנק" ng-change="service.AutoCompleteChange(service.tenantData)" typeahead-on-select="service.GetServiceRequests()" type="text" ng-model="service.tenantData" placeholder="התחל להקליד שם דייר" typeahead="data as data.name for data in service.guessTenantName($viewValue)" typeahead-loading="loadingLocations" class="form-control">
+					</div>
+					
+					<div ng-show="!service.showAddForm" class="col-md-3">	
+						<input ng-class="{'filter_on': service.buildingData.name.length }" tooltip="משלים אוטומטית בניינים ,לפנק, לפנק, לפנק" ng-change="service.AutoCompleteChange(service.buildingData)" typeahead-on-select="service.GetServiceRequests()" auto-focus type="text" ng-model="service.buildingData" placeholder="התחל להקליד שם בנין" typeahead="data as data.name for data in service.guessBuildingName($viewValue)" typeahead-loading="loadingLocations" class="form-control">
+					</div>
+					
+					<div ng-show="!service.showAddForm" class="col-md-3">
+						<select ng-class="{'filter_on': service.filterStatus.status != 0 }" tooltip="בחר סטטוס להצגת קריאות שירות" class="form-control" ng-model="service.filterStatus" ng-options="st.desc for st in service.statusesWithIdle" ng-change="service.GetServiceRequests()">					
+						</select>						
+					</div>
+										
+					
+					<br/>
+					<br/>
+					<br/>
+					
+					<form collapse="!service.showAddForm" name="loginForm" novalidate>
+						<div ng-show="service.session.description.length" class="form-group main_title">														
+							{{service.session.description}}
+						</div>
+												
+						<div class="form-group" ng-class="{'has-error': loginForm.description.$invalid}">							
+							<input id="input-status-service" class="form-control" name="description" type="text" placeholder="תיאור*" required ng-model="service.session.description" />							
+						</div>
+						
+						<div class="form-group">							
+							<input name="category" type="text" ng-model="service.session.category" placeholder="קטגוריה" typeahead="data.id as data.name for data in service.guessServiceCategory($viewValue)" typeahead-loading="loadingLocations" class="form-control">							
+						</div>
+						
+						<div class="form-group">
+							<select class="form-control" ng-model="service.session.status" ng-options="status_id as 'קריאת שירות בסטטוס: ' + staus_desc   for (status_id,staus_desc) in service.statusOf">					
+							</select>
+						</div>
+						
+						<div class="form-group" required ng-class="{'has-error': loginForm.building.$invalid}">
+							<select
+								dir="rtl"
+								style="width: 100%"
+								id="availableBuildings"
+								ui-select2 = "{allowClear : true}"
+								ng-model='service.session.building_id'
+								data-placeholder='בנין'
+								name='building'
+								ng-change='service.UpdateBuildingTenants()'>								
+								<!-- http://stackoverflow.com/questions/25694021/two-way-databinding-in-select2-for-angularjs-doesnt-work-in-angular-1-2-13#25694274 -->								
+								<option value=""></option>
+								<option ng-repeat="building in service.availableBuildings" value="{{building.id}}">{{building.name}}</option>							   
+							</select>					
+						</div>
+						
+						<div class="form-group" ng-class="{'has-error': loginForm.tenant.$invalid}">
+							<select
+								dir="rtl"
+								style="width: 100%"
+								id="availableTenants"
+								ui-select2 = "{allowClear : true}"							
+								ng-model='service.session.tenant_id'
+								data-placeholder='דייר מדווח'
+								name='tenant'
+								ng-change='service.UpdateTenantBuilding()'>
+								<!-- http://stackoverflow.com/questions/25694021/two-way-databinding-in-select2-for-angularjs-doesnt-work-in-angular-1-2-13#25694274 -->								
+								<option value=""></option>
+								<option ng-repeat="tenant in service.availableTenants" value="{{tenant.tenant_id}}">{{tenant.tenant_name}} | {{service.serviceData.buildingObjectPerBuildingId[tenant.building_id].name}} | {{tenant.tenant_phones}}</option>
+							</select>					
+						</div>
+						
+						<div class="form-group" ng-class="{'has-error': loginForm.professional.$invalid}">
+							<select
+								dir="rtl"
+								style="width: 100%"
+								id="availableProfessionals"
+								ui-select2 = "{allowClear : true}"							
+								ng-model='service.session.professional_id'
+								data-placeholder='בעל מקצוע מטפל'
+								name='professional'
+								ng-change='service.ProfessionalChanged()'>
+								<!-- http://stackoverflow.com/questions/25694021/two-way-databinding-in-select2-for-angularjs-doesnt-work-in-angular-1-2-13#25694274 -->								
+								<option value=""></option>
+								<option ng-repeat="professional in service.availableProfessionals" value="{{professional.professional_id}}">{{professional.name}} | {{professional.category}} | {{professional.phones}}</option>
+							</select>					
+						</div>
+						
+						<div class="form-group" ng-class="{'has-error': loginForm.worker.$invalid}">
+							<select
+								dir="rtl"
+								style="width: 100%"
+								id="availableWorkers"
+								ui-select2 = "{allowClear : true}"							
+								ng-model='service.session.worker_id'
+								data-placeholder='עובד יוזם'
+								name='worker'
+								ng-change='service.WorkerChanged()'>
+								<!-- http://stackoverflow.com/questions/25694021/two-way-databinding-in-select2-for-angularjs-doesnt-work-in-angular-1-2-13#25694274 -->								
+								<option value=""></option>
+								<option dir="rtl" ng-repeat="worker in service.availableWorkers" value="{{worker.worker_id}}">{{worker.name}} | {{worker.phones}}</option>
+							</select>					
+						</div>
+						
+						<div class="form-group" ng-class="{'has-error': loginForm.comment.$invalid}">							
+							<input id="input-status-service" class="form-control" name="comment" type="text" placeholder="הכנס טקטס חופשי כאן: לדוגמא טלפון של הבן אדם שהתקשר במידה והוא אינו ברשימת הדיירים" ng-model="service.session.comment" />
+						</div>
+						
+						<div class="form-group" ng-class="{'has-error': loginForm.cost.$invalid}">							
+							<input id="input-status-service" class="form-control" name="cost" type="text" placeholder="עלות" ng-model="service.session.cost" />							
+						</div>
+						
+ 						<!-- <div ng-show="service.session.edit" dir="ltr" class="input-group form-group" id="date"  datetimez ng-model="service.session.start_date">						  
+						  <input dir="rtl" class="add-on form-control" placeholder="מועד פתיחת קריאה" data-format="dd/MM/yyyy hh:mm:ss" type="text" id="input1" name="input1"></input>						  
+						  <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+						</div>
+						
+						<div ng-show="service.session.edit" dir="ltr" class="input-group form-group" id="date"  datetimez ng-model="service.session.end_date">						  
+						  <input dir="rtl" class="add-on form-control" placeholder="מועד סגירת קריאה" data-format="dd/MM/yyyy hh:mm:ss" type="text" id="input1" name="input1"></input>						  
+						  <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+						</div> -->
+
+						<div class="form-group">
+							<button ng-click="service.addNewServiceRequest()" type="submit" class="btn btn-primary" value="Login" title="Login" ng-disabled="!loginForm.$valid">
+								<span>סיים</span>
+							</button>
+							<button ng-click="service.reset_session();" class="btn btn-warning">
+								<span>נקה</span>
+							</button>
+							<button ng-click="service.showAddForm = false; service.reset_session();" class="btn btn-danger">
+								<span>בטל</span>
+							</button>							
+						</div>						
+					</form>
+				</div>
+				
+				<div id="filter_checkbox_headers" collapse="!service.showColumnPanel">
+					<span style="margin-right: 10px; font-weight: bold;">הצג\הסתר עמודות:</span>
+					<input class="sam_column_checkbox" ng-model="service.column_id" type="checkbox"/>מספר |
+					<input class="sam_column_checkbox" ng-model="service.column_status" type="checkbox"/>סטטוס |
+					<input class="sam_column_checkbox" ng-model="service.column_description" type="checkbox"/>תיאור |
+					<input class="sam_column_checkbox" ng-model="service.column_category" type="checkbox"/>קטגוריה |
+					<input class="sam_column_checkbox" ng-model="service.column_building" type="checkbox"/>בנין |
+					<input class="sam_column_checkbox" ng-model="service.column_tenant" type="checkbox"/>דייר |
+					<input class="sam_column_checkbox" ng-model="service.column_worker" type="checkbox"/>עובד חברה |
+					<input class="sam_column_checkbox" ng-model="service.column_professional" type="checkbox"/>בעל מקצוע |
+					<input class="sam_column_checkbox" ng-model="service.column_start_date" type="checkbox"/>זמן פתיחה |
+					<input class="sam_column_checkbox" ng-model="service.column_end_date" type="checkbox"/>זמן סגירה |
+					<input class="sam_column_checkbox" ng-model="service.column_comment" type="checkbox"/>הערה |
+					<input class="sam_column_checkbox" ng-model="service.column_cost" type="checkbox"/>עלות
+				</div>
+				
+				<table id="service_table" dir='rtl' ng-table="service.tableParams">				
+					<tr ng-repeat="row in service.availableServiceRequests track by row.service_id" ng-class-odd="'odd'" ng-class="{modified: row.service_selected}">
+						<td header="'smart_checkbox_header.html'" class="sam_td service_checkbox">
+							<input ng-model="row.service_selected" class="checkBoxAlerts" type="checkbox"/>
+							<div class="btn-group">							
+								<button tooltip-placement="right" tooltip="שנה סטטוס" class="btn btn-default dropdown-toggle btn-xs" data-toggle="dropdown">
+									<span class="caret"></span><i ng-class="{'failure': row.status==1, 'almost': row.status==2, 'success': row.status==3}" class="fa fa-wrench"></i> 
+								</button>
+								<ul class="dropdown-menu">
+									<li ng-repeat="(statusId, statusDesc) in service.statusOf" ng-class="{active: statusId == row.status}">
+										<a style="text-align: right;" href="javascript:void(0);" ng-click="service.changeStatus(row, statusId)"><i ng-class="{'failure': statusId==1, 'almost': statusId==2, 'success': statusId==3}" class="fa fa-wrench"></i>&nbsp;&nbsp;&nbsp;&nbsp;{{statusDesc}}</a>
+									</li>								
+								</ul>								
+							</div>
+						</td>						
+						<td ng-show="service.column_id" data-title="'#'" sortable="'service_id'" class="sam_td">{{row.service_id}}</td>  						
+						<td ng-show="service.column_status" data-title="'סטטוס'" sortable="'status'" class="sam_td service_status ">
+							{{service.statusOf[row.status]}}
+						</td>										
+						<td ng-show="service.column_building" data-title="'בנין'" sortable="'building_name'" class="bold sam_td"><!-- <i class="fa fa-building"></i> --> {{row.building_name}}</td>                                
+						<td ng-show="service.column_description" data-title="'תיאור'" sortable="'description'" class="sam_td service_description">{{row.description}}</td>						
+						<td ng-show="service.column_category" data-title="'קטגוריה'" sortable="'category'" class="sam_td">{{row.category}}</td>
+						<td ng-show="service.column_tenant" data-title="'דייר מדווח'" sortable="'tenant_name'" class="sam_td"><!-- <i class="fa fa-male"></i> --> {{row.tenant_name}}</td>                                
+						<td ng-show="service.column_worker" data-title="'פותח קריאה'" sortable="'worker_name'" class="sam_td"><!-- <i class="fa fa-users"></i> --> {{row.worker_name}}</td>
+						<td ng-show="service.column_professional" data-title="'בעל מקצוע'" sortable="'professional_name'" class="sam_td"><!-- <i class="fa fa-suitcase"></i> --> {{row.professional_name}}</td>						
+						<td ng-show="service.column_start_date" data-title="'זמן פתיחה'" sortable="'start_date'" class="sam_td service_time"><!-- <i class="fa fa-calendar"></i> --> {{row.start_date.replace(' ', ' | ')}}</td>
+						<td ng-show="service.column_end_date" data-title="'זמן סגירה'" sortable="'end_date'" class="sam_td service_time"><!-- <i class="fa fa-calendar"></i> --> {{row.end_date.replace(' ', ' | ')}}</td>						
+						<td ng-show="service.column_comment" data-title="'הערה'" sortable="'comment'" class="service_comment sam_td">{{row.comment}}</td>
+						<td ng-show="service.column_cost" data-title="'עלות'" sortable="'cost'" class="sam_td">{{row.cost | number}} ₪</td>
+						
+						
+						<td class="sam_td buttons_td">
+														
+							<div  tooltip="תזכורת באמצעות סמס" class="btn-group">
+								<button style="background-color: #EAEAEA;" class="btn btn-default dropdown-toggle btn-md" data-toggle="dropdown">
+									<i ng-class="{'fa-comment-o': true}" class="fa fa-lg"></i> <span class="caret"></span>						
+								</button>
+								<ul class="dropdown-menu" style="right: -102px !important;">									
+									<li class="dropdown-submenu">
+										<a href="javascript:void(0);"><i class="fa fa-suitcase"></i>&nbsp;&nbsp;&nbsp;&nbsp;בעל מקצוע</a>
+										<ul href="javascript:void(0);" class="dropdown-menu" style="right: -160px !important;">											
+											<li><a href="javascript:void(0);" ng-click="service.serviceReminder(row, 'professional-'+row.professional_id, 1, 'service_reminder')"><i class="fa fa-wrench failure"></i>&nbsp;&nbsp;&nbsp;&nbsp;פתיחת קריאה</a></li>											
+										</ul>
+									</li>
+									<li class="dropdown-submenu">
+										<a href="javascript:void(0);"><i class="fa fa-male"></i>&nbsp;&nbsp;&nbsp;&nbsp;דייר</a>
+										<ul href="javascript:void(0);" class="dropdown-menu" style="right: -160px !important;">											
+											<li><a href="javascript:void(0);" ng-click="service.serviceReminderTenant(row, 'tenant-'+row.tenant_id, 1, 'service_reminder_tenant_start')"><i class="fa fa-wrench failure"></i>&nbsp;&nbsp;&nbsp;&nbsp;פתיחת קריאה</a></li>
+											<li><a href="javascript:void(0);" ng-click="service.serviceReminderTenant(row, 'tenant-'+row.tenant_id, 2, 'service_reminder_tenant_progress')"><i class="fa fa-wrench almost"></i>&nbsp;&nbsp;&nbsp;&nbsp;קריאה בטיפול</a></li>
+											<li><a href="javascript:void(0);" ng-click="service.serviceReminderTenant(row, 'tenant-'+row.tenant_id, 3, 'service_reminder_tenant_finish')"><i class="fa fa-wrench success"></i>&nbsp;&nbsp;&nbsp;&nbsp;סיום קריאה</a></li>
+										</ul>
+									</li>																		
+								</ul>
+							</div>
+							&nbsp;
+							
+													
+							<button tooltip="ערוך קריאת שירות" ng-click="service.editServiceRequest(row)">
+								<i  class="fa-pencil-square-o fa fa-xs"></i></button>
+							&nbsp;
+																											
+							<button tooltip="מחק קריאת שירות" ng-click="service.deleteServiceRequests(row.service_id)">
+								<i class="fa fa-trash-o fa-xs sam_red"></i>
+							</button>
+						</td>				
+					</tr>				
+					 
+				</table>
+				
+				<button ng-show="service.maximum_records > service.availableServiceRequests.length" style="width: 100%;" ng-click="service.limit = service.limit  + 25; service.GetServiceRequests(0, '', '', '', '', true);">
+					הצג עוד תוצאות
+					<span ng-show="service.isLoading()"><i class="fa fa-spin fa-spinner"></i></span>
+				</button>				
+				
+			</div>
+			<!-- /.panel-body -->
+		</div>
+		<!-- /.panel -->
+	</div>
+</div>

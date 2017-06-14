@@ -1,0 +1,423 @@
+﻿<script type="text/ng-template" id="smart_checkbox_header.html">
+	<div  class="btn-group">
+		<button class="btn btn-default dropdown-toggle btn-xs" data-toggle="dropdown">
+			<i ng-click="payments.masterCheckBoxClick($event)" ng-class="{'fa-square-o': payments.masterCheckBoxState == 1, 'fa-minus-square-o': payments.masterCheckBoxState == 2, 'fa-check-square-o': payments.masterCheckBoxState == 3}" class="fa fa-lg"></i> <span class="caret"></span>						
+		</button>
+		<ul class="dropdown-menu">
+			<li>
+				<a href="javascript:void(0);" ng-click="payments.selectAll()"><i class="fa fa-dollar "></i>&nbsp;&nbsp;&nbsp;&nbsp;כולם</a>
+			</li>
+			<li>
+				<a href="javascript:void(0);" ng-click="payments.clearSelections()"><i class="fa fa-dollar disabled "></i>&nbsp;&nbsp;&nbsp;&nbsp;אף אחד</a>
+			</li>
+			<li role="presentation" class="divider"></li>
+			<li role="presentation" class="dropdown-header">חיתוך לפי סטטוס</li>
+			<li>
+				<a href="javascript:void(0);" ng-click="payments.selectPaymentByStatus(1)"><i class="fa fa-dollar failure "></i>&nbsp;&nbsp;&nbsp;&nbsp;נתקבל</a>
+			</li>			
+			<li>
+				<a href="javascript:void(0);" ng-click="payments.selectPaymentByStatus(2)"><i class="fa fa-dollar success "></i>&nbsp;&nbsp;&nbsp;&nbsp;נפרע</a>
+			</li>																		
+		</ul>
+	</div>
+</script>
+
+<script type="text/ng-template" id="myPaymentConfirmationModalContent.html">
+        <div class="modal-header">
+            <h3 class="modal-title">הפקדה</h3>
+        </div>
+        <div class="modal-body">			
+			<div>
+				<span dir="rtl" class="datePickerLabel">
+				 תאריך הפקדת תשלום
+				</span>&nbsp;
+				<p class="input-group">					  
+				  <input ng-class="{mandatory: !payment_details.deposit_date}" dir="rtl" type="text" class="form-control" datepicker-popup="dd-MM-yyyy" ng-model="payment_details.deposit_date" is-open="opened_deposit_date" />
+				  <span class="input-group-btn">
+					<button ng-class="{mandatory: !payment_details.deposit_date}" type="button" class="btn btn-default" ng-click="open_deposit_date($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+				  </span>
+				</p>
+			</div>
+			
+			<div>							
+				<span dir="rtl" class="datePickerLabel">
+				 אסמכתא
+				</span>&nbsp;
+				<input dir="rtl" class="form-control" type="text" ng-model="payment_details.payment_approval" />
+			</div>
+			
+        </div>
+        <div dir="rtl" class="modal-footer">
+            <button ng-disabled="!payment_details.deposit_date" class="btn btn-primary" ng-click="ok(payment_details)">אישור</button>
+            <button class="btn btn-danger" ng-click="cancel()">ביטול</button>
+        </div>
+</script>
+
+<div class="row">
+	<div class="col-lg-12">
+		<div class="panel panel-default">
+			<div dir="rtl" class="panel-heading">								
+				<div dir="ltr" class="col-md-3 datePickerComponent">
+					<span dir="rtl" class="datePickerLabel">
+					 תאריך סיום 
+					</span>&nbsp;
+					<p class="input-group">					  
+					  <input ng-disabled="true" dir="rtl" ng-change="payments.GetPayments()" type="text" class="form-control" datepicker-popup="dd-MM-yyyy" ng-model="payments.user.finish_dt" is-open="payments.opened_end" />
+					  <span class="input-group-btn">
+						<button type="button" class="btn btn-default" ng-click="payments.open_end($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+					  </span>
+					</p>
+				</div>
+				
+				<div dir="ltr" class="col-md-3 datePickerComponent">
+				<!-- <div>{{payments.user.start_dt | date :  'dd-MM-yyyy'}}</div> -->
+					<span dir="rtl" class="datePickerLabel">
+					 תאריך התחלה 
+					</span>&nbsp;
+					<p class="input-group">
+					  <input ng-disabled="true" dir="rtl" ng-change="payments.GetPayments()" type="text" class="form-control" datepicker-popup="dd-MM-yyyy" ng-model="payments.user.start_dt" is-open="payments.opened_start"  />
+					  <span class="input-group-btn">
+						<button type="button" class="btn btn-default" ng-click="payments.open_start($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+					  </span>
+					</p>
+				</div>
+															
+					
+				<a tooltip="טען נתונים שוב (טעינה מחדש תנקה את כל הבחירות שלכם)" href="javascript:void(0);" class="btn btn-default btn-lg" ng-click="payments.GetPayments()"><i ng-class="payments.isLoading()" class="fa fa-refresh fa-lg"></i></a>
+				<a tooltip="הוסף תשלום" href="javascript:void(0);" class="btn btn-default btn-lg" ng-click="payments.showAddForm = !payments.showAddForm; payments.reset_session();"><i class="fa fa-plus-circle fa-lg"></i></a>
+				<a tooltip="פותח או סוגר את בקרת השליטה בעמודות להצגה בטבלה" href="javascript:void(0);" class="btn btn-default btn-lg" ng-click="payments.showColumnPanel = !payments.showColumnPanel"><i class="fa fa-list-ul fa-lg"></i></a>
+				
+				<div ng-show="payments.total_payments" tooltip="מגוון פעולות שניתן לבצע על הרשומות שבחרתם" class="btn-group">
+					<button class="btn btn-default dropdown-toggle btn-lg" data-toggle="dropdown">
+						<i class="fa fa-lg fa-dollar"></i>
+						<span class="caret"></span>	
+						<span class="badge_success badge badge_header">{{payments.total_payments}}</span>
+					</button>
+					<ul class="dropdown-menu">	
+						<li>
+							<a href="javascript:void(0);" ng-click="payments.user.exportHtmlTableToPdf('payments_table', 'lskd')"><i class="fa fa-file-pdf-o"></i>&nbsp;&nbsp;&nbsp;&nbsp;יצא לקובץ pdf</a>
+						</li>												
+						<li>
+							<a href="javascript:void(0);" ng-click="payments.deletePayments()"><i class="fa fa-trash-o"></i>&nbsp;&nbsp;&nbsp;&nbsp;מחק </a>
+						</li>
+					</ul>
+				</div>
+				
+				
+			</div>						
+			
+						
+			<!-- /.panel-heading -->
+			<div class="panel-body">
+				<div dir="rtl" class="row">															
+										
+					<div ng-show="!payments.showAddForm" class="col-md-3">	
+						<input ng-class="{'filter_on': payments.approvalData.length }" tooltip="משלים אוטומטית אסמכתא ,לפנק, לפנק, לפנק" ng-change="payments.AutoCompleteChange(payments.approvalData)" typeahead-on-select="payments.GetPayments()" auto-focus type="text" ng-model="payments.approvalData" placeholder="התחל להקליד אסמכתא" typeahead="data as data for data in payments.guessPaymentApproval($viewValue)" typeahead-loading="loadingLocations" class="form-control">
+					</div>
+					
+					<div ng-show="!payments.showAddForm" class="col-md-3">	
+						<input ng-class="{'filter_on': payments.buildingData.name.length }" tooltip="משלים אוטומטית בניינים ,לפנק, לפנק, לפנק" ng-change="payments.AutoCompleteChange(payments.buildingData)" typeahead-on-select="payments.GetPayments()" auto-focus type="text" ng-model="payments.buildingData" placeholder="התחל להקליד שם בנין" typeahead="data as data.name for data in payments.guessBuildingName($viewValue)" typeahead-loading="loadingLocations" class="form-control">
+					</div>
+										
+					<div ng-show="!payments.showAddForm" class="col-md-3">	
+						<input ng-class="{'filter_on': payments.tenantData.name.length }" tooltip="משלים אוטומטית דיירים ,לפנק, לפנק, לפנק" ng-change="payments.AutoCompleteChange(payments.tenantData)" typeahead-on-select="payments.GetPayments()" type="text" ng-model="payments.tenantData" placeholder="התחל להקליד שם דייר" typeahead="data as data.name for data in payments.guessTenantName($viewValue)" typeahead-loading="loadingLocations" class="form-control">
+					</div>
+					
+					<div ng-show="!payments.showAddForm" class="col-md-3">
+						<select ng-class="{'filter_on': payments.filterStatus.status != 0 }" tooltip="בחר סטטוס להצגת תשלומים" class="form-control" ng-model="payments.filterStatus" ng-options="st.desc for st in payments.statusesWithIdle" ng-change="payments.GetPayments()">					
+						</select>						
+					</div>
+										
+					
+					<br/>
+					<br/>
+					<br/>
+					
+					<form collapse="!payments.showAddForm" name="loginForm" novalidate>												
+						<div class="form-group">
+							<span dir="rtl" class="bold">
+							 סטטוס
+							</span>&nbsp;
+							<select class="form-control" ng-model="payments.session.status" ng-options="status_id as 'תשלום בסטטוס: ' + staus_desc   for (status_id,staus_desc) in payments.statusOf">					
+							</select>
+						</div>
+						
+						<div class="form-group" ng-class="{'has-error': loginForm.tenant.$invalid}">
+							<span dir="rtl" class="bold">
+							 דייר
+							</span>&nbsp;
+							<select
+								ng-class="{mandatory: !payments.session.tenant_id}" 
+								dir="rtl"
+								style="width: 100%"
+								id="availableTenants"
+								ui-select2 = "{allowClear : true}"							
+								ng-model='payments.session.tenant_id'
+								data-placeholder='דייר'
+								name='tenant'
+								ng-change='payments.UpdateTenantBuilding()'>								
+								<option value=""></option>
+								<option ng-repeat="tenant in payments.availableTenants" value="{{tenant.tenant_id}}">{{tenant.tenant_name}} | {{payments.serviceData.buildingObjectPerBuildingId[tenant.building_id].name}} | {{tenant.apartment_number}}</option>
+							</select>					
+						</div>
+						
+						<div class="form-group" ng-class="{'has-error': loginForm.building.$invalid}">
+							<span dir="rtl" class="bold">
+							 בנין
+							</span>&nbsp;
+							<select
+								ng-class="{mandatory: !payments.session.building_id}" 
+								dir="rtl"
+								style="width: 100%"
+								id="availableBuildings"
+								ui-select2 = "{allowClear : true}"
+								ng-model='payments.session.building_id'
+								data-placeholder='בנין'
+								name='building'
+								ng-change='payments.UpdateBuildingTenants()'>																
+								<option value=""></option>
+								<option ng-repeat="building in payments.availableBuildings" value="{{building.id}}">{{building.name}}</option>							   
+							</select>					
+						</div>
+						
+						<div dir="ltr" class="form-group">
+							<span dir="rtl" class="datePickerLabel">
+							 תאריך קבלת תשלום
+							</span>&nbsp;
+							<p class="input-group">					  
+							  <input ng-class="{mandatory: !payments.session.acceptance_date}" dir="rtl" type="text" class="form-control" datepicker-popup="dd-MM-yyyy" ng-model="payments.session.acceptance_date" is-open="payments.opened_acceptance_date" />
+							  <span class="input-group-btn">
+								<button ng-class="{mandatory: !payments.session.acceptance_date}"  type="button" class="btn btn-default" ng-click="payments.open_acceptance_date($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+							  </span>
+							</p>
+						</div>
+						
+						<div class="form-group" ng-class="{'has-error': loginForm.amount.$invalid}">
+							<span dir="rtl" class="bold">
+							 סכום
+							</span>&nbsp;
+							<input ng-class="{mandatory: !payments.session.amount}" id="input-status-service" class="form-control" name="amount" type="text" placeholder="סכום" ng-model="payments.session.amount" />							
+						</div>	
+						
+						<div class="form-group">
+							<span dir="rtl" class="bold">
+							 סוג תשלום
+							</span>&nbsp;
+							<select class="form-control" ng-change="payments.changePaymentType()" ng-model="payments.session.payment_type" ng-options="payment_type_id as payment_type_desc  for (payment_type_id, payment_type_desc) in payments.paymentTypeOf">					
+							</select>
+						</div>
+						
+						<div ng-show="payments.session.payment_type == 1 && !payments.session.edit" class="form-group" ng-class="{'has-error': loginForm.amount.$invalid}">
+							<span dir="rtl" class="bold">
+							 כמות צ'קים
+							</span>&nbsp;
+							<input id="input-status-service" class="form-control" name="quantity" type="text" placeholder="כמות צ'קים" ng-model="payments.session.quantity" />							
+						</div>	
+						
+						<div class="form-group" ng-class="{'has-error': loginForm.worker.$invalid}">
+							<span dir="rtl" class="bold">
+							 מקבל (בחירה מתוך עובדי החברה)
+							</span>&nbsp;
+							<select
+								ng-class="{mandatory: !payments.session.worker_id}"
+								dir="rtl"
+								style="width: 100%"
+								id="availableWorkers"
+								ui-select2 = "{allowClear : true}"							
+								ng-model='payments.session.worker_id'
+								data-placeholder='מקבל'
+								name='worker'
+								ng-change='payments.WorkerChanged()'>								
+								<option value=""></option>
+								<option dir="rtl" ng-repeat="worker in payments.availableWorkers" value="{{worker.worker_id}}">{{worker.name}}</option>
+							</select>					
+						</div>
+						
+						<div class="form-group" ng-class="{'has-error': loginForm.amount.$invalid}">
+							<span dir="rtl" class="bold">
+							 קבלה
+							</span>&nbsp;
+							<input ng-class="{mandatory: !payments.session.receipt}" id="input-status-service" class="form-control" name="receipt" type="text" placeholder="קבלה" ng-model="payments.session.receipt" />							
+						</div>
+
+						<!-- From this part, the following fields will appear according to the payment type -->
+						<!-- ****************************************************************************** -->
+						
+						
+						<div ng-show="payments.session.payment_type == 1" class="form-group" ng-class="{'has-error': loginForm.tenant_cheque_identifier.$invalid}">							
+							<span dir="rtl" class="bold">
+							 מספר מזהה (מספר צ'ק לדוגמא)
+							</span>&nbsp;
+							<input ng-class="{mandatory: !payments.session.tenant_cheque_identifier}" id="input-status-service" class="form-control" name="tenant_cheque_identifier" type="text" placeholder="מספר מזהה" ng-model="payments.session.tenant_cheque_identifier" />
+						</div>
+						
+						<div collapse="payments.session.payment_type == 2" class="form-group" ng-class="{'has-error': loginForm.payment_approval.$invalid}">							
+							<span dir="rtl" class="bold">
+							 אסמכתא
+							</span>&nbsp;
+							<input ng-class="{mandatory: !payments.session.payment_approval && payments.session.payment_type == 3}" id="input-status-service" class="form-control" name="payment_approval" type="text" placeholder="אסמכתא" ng-model="payments.session.payment_approval" />
+						</div>
+						
+						<div ng-show="payments.session.payment_type == 1" dir="ltr" class="form-group">
+							<span dir="rtl" class="datePickerLabel">
+							 תאריך פירעון
+							</span>&nbsp;
+							<p class="input-group">					  
+							  <input ng-class="{mandatory: !payments.session.tenant_cheque_date}" ng-change="payments.test()" dir="rtl" type="text" class="form-control" datepicker-popup="dd-MM-yyyy" datepicker-mode="dd-MM-yyyy" ng-model="payments.session.tenant_cheque_date" is-open="payments.opened_tenant_cheque_date" />
+							  <span class="input-group-btn">
+								<button ng-class="{mandatory: !payments.session.tenant_cheque_date}" type="button" class="btn btn-default" ng-click="payments.open_tenant_cheque_date($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+							  </span>
+							</p>
+						</div>
+																																			
+						
+						<div collapse="payments.session.payment_type == 2" class="form-group" ng-class="{'has-error': loginForm.tenant_bank_account.$invalid}">							
+							<span dir="rtl" class="bold">
+							 מספר חשבון
+							</span>&nbsp;
+							<input ng-class="{mandatory: !payments.session.tenant_bank_account}" id="input-status-service" class="form-control" name="tenant_bank_account" type="text" placeholder="מספר חשבון" ng-model="payments.session.tenant_bank_account" />
+						</div>
+						
+						<div collapse="payments.session.payment_type == 2" class="form-group" ng-class="{'has-error': loginForm.tenant_bank_branch.$invalid}">							
+							<span dir="rtl" class="bold">
+							 מספר סניף / מספר בנק
+							</span>&nbsp;
+							<input ng-class="{mandatory: !payments.session.tenant_bank_branch}" id="input-status-service" class="form-control" name="tenant_bank_branch" type="text" placeholder="מספר סניף / מספר בנק" ng-model="payments.session.tenant_bank_branch" />
+						</div>
+						
+						<div ng-show="payments.session.edit" class="form-group" ng-class="{'has-error': loginForm.company_bank_account.$invalid}">							
+							<span dir="rtl" class="bold">
+							 מספר חשבון לזיכוי
+							</span>&nbsp;
+							<input id="input-status-service" class="form-control" name="company_bank_account" type="text" placeholder="חשבון לזיכוי" ng-model="payments.session.company_bank_account" />
+						</div>
+						
+						<div ng-show="payments.session.edit" class="form-group" ng-class="{'has-error': loginForm.company_bank_branch.$invalid}">							
+							<span dir="rtl" class="bold">
+							 מספר סניף / מספר בנק לזיכוי
+							</span>&nbsp;
+							<input id="input-status-service" class="form-control" name="company_bank_branch" type="text" placeholder="מספר סניף / מספר בנק לזיכוי" ng-model="payments.session.company_bank_branch" />
+						</div>
+																	
+						<div  ng-show="payments.session.edit && payments.session.payment_type == 1" dir="ltr" class="form-group">
+							<span dir="rtl" class="datePickerLabel">
+							 תאריך הפקדה
+							</span>&nbsp;
+							<p class="input-group">					  
+							  <input dir="rtl" type="text" class="form-control" datepicker-popup="dd-MM-yyyy" ng-model="payments.session.deposit_date" is-open="payments.opened_deposit_date" />
+							  <span class="input-group-btn">
+								<button type="button" class="btn btn-default" ng-click="payments.open_deposit_date($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+							  </span>
+							</p>
+						</div>
+						
+						<div class="form-group" ng-class="{'has-error': loginForm.comment.$invalid}">							
+							<span dir="rtl" class="bold">
+							 הערה (לדוגמא: נתקבל עבור תקופה מסויימת)
+							</span>&nbsp;
+							<input id="input-status-service" class="form-control" name="comment" type="text" placeholder="הערה" ng-model="payments.session.comment" />
+						</div>
+						
+						<div class="form-group">
+							<button ng-click="payments.addNewPayment()" type="submit" class="btn btn-primary" value="Login" title="Login" ng-disabled="payments.partialyData()">
+								<span>סיים</span>
+							</button>
+							<button ng-click="payments.reset_session();" class="btn btn-warning">
+								<span>נקה</span>
+							</button>
+							<button ng-click="payments.showAddForm = false; payments.reset_session();" class="btn btn-danger">
+								<span>בטל</span>
+							</button>							
+						</div>
+					</form>
+				</div>
+				
+				<div id="filter_checkbox_headers" collapse="!payments.showColumnPanel">
+					<span style="margin-right: 10px; font-weight: bold;">הצג\הסתר עמודות:</span>
+					<input class="sam_column_checkbox" ng-model="payments.column_id" type="checkbox"/>מספר |
+					<input class="sam_column_checkbox" ng-model="payments.column_status" type="checkbox"/>סטטוס |
+					<input class="sam_column_checkbox" ng-model="payments.column_tenant" type="checkbox"/>דייר |
+					<input class="sam_column_checkbox" ng-model="payments.column_apartment_number" type="checkbox"/>דירה |
+					<input class="sam_column_checkbox" ng-model="payments.column_building" type="checkbox"/>בנין |
+					<input class="sam_column_checkbox" ng-model="payments.column_acceptance_date" type="checkbox"/> תאריך קבלת תשלום |					
+					<input class="sam_column_checkbox" ng-model="payments.column_amount" type="checkbox"/>סכום |					
+					<input class="sam_column_checkbox" ng-model="payments.column_payment_type" type="checkbox"/>סוג תשלום |	
+					<input class="sam_column_checkbox" ng-model="payments.column_worker" type="checkbox"/>מקבל |					
+					<input class="sam_column_checkbox" ng-model="payments.column_receipt" type="checkbox"/>קבלה |	
+					<input class="sam_column_checkbox" ng-model="payments.column_tenant_cheque_identifier" type="checkbox"/>מספר מזהה |										
+					<input class="sam_column_checkbox" ng-model="payments.column_payment_approval" type="checkbox"/>אסמכתא |					
+					<input class="sam_column_checkbox" ng-model="payments.column_tenant_cheque_date" type="checkbox"/>תאריך פירעון |					
+					<input class="sam_column_checkbox" ng-model="payments.column_tenant_bank_account" type="checkbox"/>מספר חשבון |
+					<input class="sam_column_checkbox" ng-model="payments.column_tenant_bank_branch" type="checkbox"/>מספר סניף / מספר בנק |																			
+					<input class="sam_column_checkbox" ng-model="payments.column_company_bank_account" type="checkbox"/>מספר חשבון לזיכוי |
+					<input class="sam_column_checkbox" ng-model="payments.column_company_bank_branch" type="checkbox"/>מספר סניף / מספר בנק לזיכוי |			
+					<input class="sam_column_checkbox" ng-model="payments.column_deposit_date" type="checkbox"/>תאריך הפקדה |
+					<input class="sam_column_checkbox" ng-model="payments.column_comment" type="checkbox"/>הערות				
+				</div>
+				
+				<table id="payments_table" dir='rtl' ng-table="payments.tableParams">				
+					<tr ng-repeat="row in payments.availablePayments track by row.payment_id" ng-class-odd="'odd'" ng-class="{modified: row.payment_selected}">
+						<td header="'smart_checkbox_header.html'" class="sam_td payments_checkbox">
+							<input ng-model="row.payment_selected" class="checkBoxAlerts" type="checkbox"/>
+							<div class="btn-group">							
+								<button tooltip-placement="right" tooltip="שנה סטטוס" class="btn btn-default dropdown-toggle btn-xs" data-toggle="dropdown">
+									<span class="caret"></span><i ng-class="{'failure': row.status==1, 'success': row.status==2}" class="fa fa-dollar"></i> 
+								</button>
+								<ul class="dropdown-menu">
+									<li ng-repeat="(statusId, statusDesc) in payments.statusOf" ng-class="{active: statusId == row.status}">
+										<a style="text-align: right;" href="javascript:void(0);" ng-click="payments.changeStatus(row, statusId)"><i ng-class="{'failure': statusId==1, 'success': statusId==2}" class="fa fa-dollar"></i>&nbsp;&nbsp;&nbsp;&nbsp;{{statusDesc}}</a>
+									</li>								
+								</ul>								
+							</div>
+						</td>						
+						<td ng-show="payments.column_id" data-title="'#'" sortable="'payment_id'" class="sam_td">{{row.payment_id}}</td>  						
+						<td ng-show="payments.column_status" data-title="'סטטוס'" sortable="'status'" class="sam_td payments_status ">
+							{{payments.statusOf[row.status]}}
+						</td>											
+						<td ng-show="payments.column_tenant" data-title="'דייר'" sortable="'tenant_name'" class="sam_td">{{row.tenant_name}}</td>
+						<td ng-show="payments.column_apartment_number" data-title="'דירה'" sortable="'apartment_number'" class="sam_td">{{row.apartment_number}}</td>
+						<td ng-show="payments.column_building" data-title="'בנין'" sortable="'building_name'" class="sam_td">{{row.building_name}}</td>                                
+						<td ng-show="payments.column_acceptance_date" data-title="'תאריך קבלת תשלום'" sortable="'acceptance_date'" class="sam_td">{{row.acceptance_date | date :  'dd-MM-yyyy'}}</td>						
+						<td ng-show="payments.column_amount" data-title="'סכום'" sortable="'amount'" class="sam_td">{{row.amount}} ₪</td>						
+						<td ng-show="payments.column_payment_type" data-title="'סוג תשלום'" sortable="'payment_type'" class="sam_td payments_status ">
+							{{payments.paymentTypeOf[row.payment_type]}}
+						</td>	
+						<td ng-show="payments.column_worker" data-title="'מקבל'" sortable="'worker_name'" class="sam_td">{{row.worker_name}}</td>
+						<td ng-show="payments.column_receipt" data-title="'קבלה'" sortable="'receipt'" class="sam_td">{{row.receipt}}</td>
+						<td ng-show="payments.column_tenant_cheque_identifier" data-title="'מספר מזהה'" sortable="'tenant_cheque_identifier'" class="sam_td">{{row.tenant_cheque_identifier}}</td>
+						<td ng-show="payments.column_payment_approval" data-title="'אסמכתא'" sortable="'payment_approval'" class="sam_td">{{row.payment_approval}}</td>
+						<td ng-show="payments.column_tenant_cheque_date" data-title="'תאריך פירעון'" sortable="'tenant_cheque_date'" class="sam_td">{{row.tenant_cheque_date | date :  'dd-MM-yyyy'}}</td>												
+						<td ng-show="payments.column_tenant_bank_account" data-title="'מספר חשבון'" sortable="'tenant_bank_account'" class="sam_td">{{row.tenant_bank_account}}</td>
+						<td ng-show="payments.column_tenant_bank_branch" data-title="'מספר סניף / מספר בנק'" sortable="'tenant_bank_branch'" class="sam_td">{{row.tenant_bank_branch}}</td>
+						<td ng-show="payments.column_company_bank_account" data-title="'מספר חשבון לזיכוי'" sortable="'company_bank_account'" class="sam_td">{{row.company_bank_account}}</td>
+						<td ng-show="payments.column_company_bank_branch" data-title="'מספר סניף / מספר בנק לזיכוי'" sortable="'company_bank_branch'" class="sam_td">{{row.company_bank_branch}}</td>																								
+						<td ng-show="payments.column_deposit_date" data-title="'תאריך הפקדה'" sortable="'deposit_date'" class="sam_td">{{row.deposit_date | date :  'dd-MM-yyyy'}}</td>											
+						<td ng-show="payments.column_comment" data-title="'הערה'" sortable="'comment'" class="service_comment sam_td">{{row.comment}}</td>
+						
+						<td class="sam_td buttons_td">
+																					
+							<button tooltip="ערוך פרטי תשלום" ng-click="payments.editPayment(row)">
+								<i  class="fa-pencil-square-o fa fa-xs"></i></button>
+							&nbsp;
+							<button tooltip="העתק תשלום" ng-click="payments.copyPayment(row)">
+								<i  class="fa-copy fa fa-xs"></i></button>
+							&nbsp;	
+							<button tooltip="מחק תשלום" ng-click="payments.deletePayments(row.payment_id)">
+								<i class="fa fa-trash-o fa-xs sam_red"></i>
+							</button>
+						</td>				
+					</tr>				
+					 
+				</table>
+				
+				<button ng-show="payments.maximum_records > payments.availablePayments.length" style="width: 100%;" ng-click="payments.limit = payments.limit  + 50; payments.GetPayments();">
+					הצג עוד תוצאות
+					<span ng-show="payments.isLoading()"><i class="fa fa-spin fa-spinner"></i></span>
+				</button>				
+				
+			</div>
+			<!-- /.panel-body -->
+		</div>
+		<!-- /.panel -->
+	</div>
+</div>

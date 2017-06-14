@@ -1,0 +1,116 @@
+﻿
+<div class="row">
+	<div class="col-lg-12">
+		<div class="panel panel-default">
+			<div dir="rtl" class="panel-heading">								
+				<a href="javascript:void(0);" class="btn btn-default btn-lg" ng-click="groupSms.refresh()">
+					<i ng-class="groupSms.isLoading()" class="fa fa-refresh fa-lg"></i>
+				</a>
+				<a ng-click="groupSms.sendGroupSms()" ng-class='{disabled: !groupSms.sms_content.length || !groupSms.chosenEntities.length || !groupSms.worker_id.length}' href="javascript:void(0);" class="btn btn-default btn-lg">
+					<i class="fa fa-send-o fa-lg"></i>
+				</a>
+			</div>
+			
+			<div class="panel-body">
+				<div dir="rtl" class="row">	
+				
+					<div ng-show="groupSms.credit" style="margin-right: 15px;">יתרת סמסים עומדת על {{groupSms.credit}}</div>
+					<div ng-show="!groupSms.credit" dir="rtl"  class="col-md-12">	
+						<alert type="danger"><b>לא נותרו סמסים בחשבונכם. אנא רכשו חבילת סמסים בהקדם ונסו שנית</b></alert>
+					</div>				
+					
+					<br/>
+
+					<div dir="rtl" ng-show="groupSms.showSendSummery" style="padding: 15px;">	
+						<alert type="success" close="groupSms.showSendSummery = false;">סמסים נשלחו בהצלחה . <a ng-href="#history">צפו בהם עכשיו</a></alert>
+					</div>
+					
+					<table dir="rtl" style="float: right; width: 100%; margin-right: 15px;">	
+						<tr style="margin-bottom: 10px;">
+							<td style="width: 37px; padding-bottom: 15px;">
+								מאת:
+							</td>
+							<td style="padding-bottom: 15px;">
+								<!-- https://github.com/angular-ui/ui-select2 -->
+								<!-- http://plnkr.co/edit/pFkY5f?p=preview -->
+								<!-- http://stackoverflow.com/questions/17022015/angular-ng-options-in-select2-settings-value-property -->
+								<div dir="rtl">	
+									<select
+										dir="rtl"
+										style="width: 98%"
+										id="availableWorkers"
+										ui-select2 = "{allowClear : true}"							
+										ng-model='groupSms.worker_id'
+										data-placeholder='בחר עובד חברה ממנו תישלח התזכורת'
+										name='worker'				
+										<!-- http://stackoverflow.com/questions/25694021/two-way-databinding-in-select2-for-angularjs-doesnt-work-in-angular-1-2-13#25694274 -->								
+										<option value=""></option>
+										<option dir="rtl" ng-repeat="worker in groupSms.availableWorkers" value="{{worker.worker_id}}">{{worker.name}} | {{worker.phones}}</option>
+									</select>
+								</div>
+							</td>				
+						</tr>
+						
+						<tr>
+							<td style="width: 37px;">
+								עבור:
+							</td>
+							<td>
+								<!-- https://github.com/angular-ui/ui-select2 -->
+								<!-- http://plnkr.co/edit/pFkY5f?p=preview -->
+								<!-- http://stackoverflow.com/questions/17022015/angular-ng-options-in-select2-settings-value-property -->
+								<div dir="rtl">	
+									<select
+										dir="rtl"
+										style="width: 98%"
+										id="entities"
+										ui-select2 = "{minimumInputLength : 2, maximumSelectionSize: 10}"
+										multiple
+										ng-model='groupSms.chosenEntities'
+										data-placeholder='נמענים: התחל להקליד שם בנין, דייר, בעל מקצוע או עובד חברה'
+										name='locations'							
+										<option value=""></option>
+										<option ng-repeat="entity in groupSms.entities" fa_icon="{{entity.icon}}" value="{{entity.type}}-{{entity.id}}">{{entity.name}}</option>
+									</select>
+								</div>
+							<td>
+						</tr>
+					</table>
+		
+		
+					<!-- <div dir="rtl" class="sam_title sam_blue_bold">סמס קבוצתי</div>												 -->
+					
+					<!-- https://github.com/angular-ui/ui-select2 -->
+					<!-- http://plnkr.co/edit/pFkY5f?p=preview -->
+					<!-- http://stackoverflow.com/questions/17022015/angular-ng-options-in-select2-settings-value-property -->
+					<!-- <div dir="rtl" class="col-md-12">	
+						<select
+							dir="rtl"
+							style="width: 100%"
+							id="entities"
+							ui-select2 = "{minimumInputLength : 2}"
+							multiple
+							ng-model='groupSms.chosenEntities'
+							data-placeholder='נמענים: התחל להקליד שם בנין, דייר, בעל מקצוע או עובד חברה'
+							name='locations'							
+							<option value=""></option>
+							<option ng-repeat="entity in groupSms.entities" fa_icon="{{entity.icon}}" value="{{entity.type}}-{{entity.id}}">{{entity.name}}</option>						   
+						</select>
+					</div> -->
+				</div>
+				
+				<br/>								
+												
+				<br/>
+				
+				<div auto-focus>
+					<textarea placeholder="הקלד כאן תוכן הודעת סמס" id="group_sms_container" ng-model="groupSms.sms_content" class="form-control"></textarea>				
+				</div>
+			
+												                            
+			</div>
+			<!-- /.panel-body -->
+		</div>
+		<!-- /.panel -->
+	</div>
+</div>

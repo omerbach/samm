@@ -17,7 +17,7 @@ class Config(object):
     @property
     def rootBuildingsDir(self):
         return self.parser.get('file_system', 'root_buildings_dir')
-        
+    #123 kjkj
     @property
     def ongoingDebtsTemplatesDir(self):
         return self.parser.get('file_system', 'ongoing_debts_templates_dir')

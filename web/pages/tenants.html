@@ -1,0 +1,568 @@
+﻿<script type="text/ng-template" id="myPreviewModalContent.html">
+        <div class="modal-header">
+            <h3 class="modal-title">{{template.name}}</h3>
+        </div>
+        <div dir="rtl" class="modal-body">						
+			
+			<select				
+				dir="rtl"
+				style="width: 100%"
+				id="availableTenants"
+				ui-select2 = "{allowClear : true}"							
+				ng-model='chosen_tenant'
+				ng-change='tenant_changed(chosen_tenant, chosen_alert)'
+				data-placeholder='בחר דייר לתצוגה מקדימה'
+				name='tenant'
+				ng-options="tenant as tenant.tenant_name for tenant in tenants">
+				<option></option>
+			</select>
+	
+			<br/><br/>
+			
+			<select				
+				dir="rtl"
+				style="width: 100%"
+				id="availableAlerte"
+				ui-select2 = "{allowClear : true}"
+				ng-change='alert_changed(chosen_alert, chosen_tenant)'				
+				ng-model='chosen_alert'				
+				data-placeholder='בחר התראה לתצוגה מקדימה'
+				name='alert'
+				ng-options="alert as alert.alert_name for alert in alerts">
+				<option></option>
+			</select>
+			
+			<br/>
+			<br/>
+			<table style="border: 1px solid #CCC; width: 100%;" dir='rtl'>
+				<tr>
+					<th class="sam_th">שם בנין</th>
+					<th class="sam_th">דירה</th>
+					<th class="sam_th">שם דייר</th>
+					<th class="sam_th">סוג חוב</th>
+					<th class="sam_th">תשלום חודשי</th>
+					<th class="sam_th">חודשי חוב</th>
+					<th class="sam_th">חוב</th>
+					<th class="sam_th" ng-repeat="dynamic_field in dynamic_fields">
+						{{dynamic_field.excel_header}}
+					</th>
+				</tr>
+				<tr ng-class-odd="'odd'">
+					<td class="sam_td">{{chosen_tenant.name}}</td>
+					<td class="sam_td">{{chosen_tenant.apartment_number}}</td>
+					<td class="sam_td">{{chosen_tenant.tenant_name}}</td>
+					<td class="sam_td">{{chosen_tenant.debt_description}}</td>
+					<td class="sam_td">{{chosen_tenant.monthly_payment}} ₪</td>
+					<td class="sam_td">{{chosen_tenant.months}}</td>
+					<td class="sam_td">{{chosen_tenant.total_debt}} ₪</td>					
+					<td class="sam_td" ng-repeat="dynamic_field in dynamic_fields">
+						{{chosen_tenant[dynamic_field.template_name]}}
+					</td>
+				</tr>
+			</table>
+			<div collapse="!alert_content.content.length">
+				<br/><br/>				
+				<div>
+					<div class="bold">{{alert_content.meta}}</div>
+					<hr/>
+					<br/>
+					<div ng-bind-html="showInnerHtml(alert_content.content)"></div>
+				</div>
+			</div>
+			
+			<br/>						
+			
+        </div>
+        <div dir="rtl" class="modal-footer">
+            <button class="btn btn-primary" ng-click="ok()">סיימתי, תודה</button>            		
+        </div>
+</script>
+
+<script type="text/ng-template" id="myAlertsConfirmationModalContent.html">
+        <div class="modal-header">
+            <h3 class="modal-title">{{template_name}}: שליחת {{sms_count + mail_count + letter_count}} התראות לדיירים</h3>
+        </div>
+        <div dir="rtl" class="modal-body">
+			
+			<div ng-show="credit">יתרת סמסים עומדת על {{credit}}</div>
+			<div ng-show="!credit" dir="rtl"  class="col-md-12">	
+				<alert type="danger"><b>לא נותרו סמסים בחשבונכם. אנא רכשו חבילת סמסים בהקדם ונסו שנית</b></alert>
+			</div>				
+								
+			<br/>
+
+			<div> הנך עומד לשלוח:</div>
+			<br/>
+			<ul>
+			<li ng-show="sms_count">{{sms_count}} סמסים</li>
+			<li ng-show="mail_count">{{mail_count}} מיילים</li>
+			<li ng-show="letter_count">{{letter_count}} מכתבים</li>
+			</ul>			
+			<br/>
+			<select				
+				dir="rtl"
+				style="width: 100%"
+				id="availableWorkers"
+				ui-select2 = "{allowClear : true}"							
+				ng-model='worker_id'
+				data-placeholder='בחר עובד חברה ממנו יישלחו ההתראות'
+				name='worker'				
+				<!-- http://stackoverflow.com/questions/25694021/two-way-databinding-in-select2-for-angularjs-doesnt-work-in-angular-1-2-13#25694274 -->								
+				<option value=""></option>
+				<option dir="rtl" ng-repeat="worker in workers" value="{{worker.worker_id}}">{{worker.mails}} | {{worker.name}} | {{worker.phones}}</option>
+			</select>			
+			<br/>						
+			
+        </div>
+        <div dir="rtl" class="modal-footer">
+            <button ng-disabled="!worker_id.length" class="btn btn-primary" ng-click="ok({'worker_id': worker_id})">שלח</button>
+            <button class="btn btn-danger" ng-click="cancel()">ביטול</button>			
+        </div>
+</script>
+
+<div class="row">
+				
+	<div class="col-lg-12">
+		<div class="panel panel-default">
+			<div dir="rtl" class="panel-heading">								
+				<div dir="ltr" class="col-md-3 datePickerComponent">
+					<span dir="rtl" class="datePickerLabel">
+					 תאריך סיום לחישוב חובות
+					</span>&nbsp;
+					<p class="input-group">					  
+					  <input ng-disabled="true" dir="rtl" ng-change="tenants.GetBuildings()" type="text" class="form-control" datepicker-popup="dd-MM-yyyy" ng-model="tenants.user.finish_dt" is-open="tenants.opened_end" ng-required="true"  />
+					  <span class="input-group-btn">
+						<button type="button" class="btn btn-default" ng-click="tenants.open_end($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+					  </span>
+					</p>
+				</div>
+				
+				<div dir="ltr" class="col-md-3 datePickerComponent">
+					<span dir="rtl" class="datePickerLabel">
+					 תאריך התחלה לחישוב חובות
+					</span>&nbsp;
+					<p class="input-group">
+					  <input ng-disabled="true" dir="rtl" ng-change="tenants.GetBuildings()" type="text" class="form-control" datepicker-popup="dd-MM-yyyy" ng-model="tenants.user.start_dt" is-open="tenants.opened_start" ng-required="true"  />
+					  <span class="input-group-btn">
+						<button type="button" class="btn btn-default" ng-click="tenants.open_start($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+					  </span>
+					</p>
+				</div>																																								
+				
+				<div dir="rtl" class="col-md-3" style="margin-top: -3px;">
+					<span dir="rtl" style="font-weight: bold;">
+					 סוג חוב
+					</span>&nbsp;					
+					<select ng-change="tenants.GetTenants()" ng-model="tenants.user.debt_type" ng-options="debt_type for debt_type in tenants.user.debt_types" style="display: block; height: 31px; width: 100%">
+					</select>
+				</div>	
+				
+				
+					
+				<!-- <div style="top: 14px;" dir="ltr" class="col-md-3 btn-group">					
+					<label ng-change="tenants.GetTenants()" class="toggle-btn btn btn-danger" ng-model="tenants.user.debt_type" btn-radio="'1'" uncheckable>מיסי ועד</label>
+					<label ng-change="tenants.GetTenants()" class="toggle-btn btn btn-danger" ng-model="tenants.user.debt_type" btn-radio="'2'" uncheckable>חובות מיוחדים</label>        					
+				</div> -->
+
+				<a tooltip="טען נתונים שוב (טעינה מחדש תנקה את כל הבחירות שלכם)" href="javascript:void(0);" class="btn btn-default btn-lg" ng-click="tenants.GetTenants()"><i ng-class="tenants.isLoading()" class="fa fa-refresh fa-lg"></i></a>				
+				
+				<a tooltip="פותח או סוגר את בקרת השליטה בעמודות להצגה בטבלה" href="javascript:void(0);" class="btn btn-default btn-lg" ng-click="tenants.showColumnPanel = !tenants.showColumnPanel"><i class="fa fa-list-ul fa-lg"></i></a>
+												
+				<a tooltip="פותח או סוגר את חלון בחירת התבנית לשליחת התראות" href="javascript:void(0);" class="btn btn-default btn-lg" ng-click="tenants.toggleDemoPanel()"><i class="fa fa-newspaper-o fa-lg"></i>
+					<span ng-show="tenants.templateData.sms_content.length" style="top: 3px !important;font-size: 10px !important;" class="badge_success badge badge_header"><i class="fa fa-comment-o"></i><span ng-show="tenants.alerts.sms.count"> {{tenants.alerts.sms.count}}</span></span>
+					<span ng-show="tenants.templateData.mail_content.length" style="top: 24px !important;font-size: 10px !important;" class="badge_success badge badge_header"><i class="fa fa-envelope-o"></i><span ng-show="tenants.alerts.mail.count"> {{tenants.alerts.mail.count}}</span></span>
+					<span ng-show="tenants.templateData.letter_content.length" style="top: 44px !important; font-size: 10px !important;" class="badge_success badge badge_header"><i class="fa fa-file-word-o"></i><span ng-show="tenants.alerts.letter.count"> {{tenants.alerts.letter.count}}</span></span>
+				</a>								
+				&nbsp;&nbsp;&nbsp;&nbsp;
+				<div ng-show="tenants.total_tenants" tooltip="מגוון פעולות שניתן לבצע על הרשומות שבחרתם" class="btn-group">
+					<button class="btn btn-default dropdown-toggle btn-lg" data-toggle="dropdown">
+						<i class="fa fa-lg fa-male "></i>
+						<span class="caret"></span>	
+						<span class="badge_success badge badge_header">{{tenants.total_tenants}}</span>
+					</button>
+					<ul class="dropdown-menu">
+						<li>
+							<a href="javascript:void(0);" ng-click="tenants.user.exportHtmlTableToPdf('tenants_table', 'lskd')"><i class="fa fa-file-pdf-o"></i>&nbsp;&nbsp;&nbsp;&nbsp;יצא לקובץ pdf</a>
+						</li>
+						
+						<li ng-class="{disabled: !tenants.alerts.sms.count && !tenants.alerts.mail.count && !tenants.alerts.letter.count }">						
+							<a href="javascript:void(0);" ng-click="tenants.sendTemplateAlerts()"><i class="fa fa-send-o"></i>&nbsp;&nbsp;&nbsp;&nbsp;שלח {{tenants.alerts.sms.count + tenants.alerts.mail.count + tenants.alerts.letter.count}} התראות</a>
+						</li>
+						<li ng-class="{disabled: !tenants.alerts.sms.count && !tenants.alerts.mail.count && !tenants.alerts.letter.count }">						
+							<a href="javascript:void(0);" ng-click="tenants.previewTamplate()"><i class="fa fa-eye"></i>&nbsp;&nbsp;&nbsp;&nbsp;תצוגה מקדימה</a>
+						</li>
+						<li>
+							<a href="javascript:void(0);" ng-click="tenants.sendSms();"><i class="fa fa-comment-o"></i>&nbsp;&nbsp;&nbsp;&nbsp;שלח סמס</a>
+						</li>
+						<li>
+							<a href="javascript:void(0);" ng-click="tenants.sendMail();"><i class="fa fa-envelope-o"></i>&nbsp;&nbsp;&nbsp;&nbsp;שלח מייל</a>
+						</li>
+						<li ng-class="{disabled: tenants.total_tenants != 1}">						
+							<a href="javascript:void(0);" ng-click="tenants.CreateTenantsServiceRequest()"><i class="fa fa-suitcase"></i>&nbsp;&nbsp;&nbsp;&nbsp;פתח קריאת שירות</a>
+						</li>						
+					</ul>
+				</div>											
+
+				
+			</div>						
+			
+			<div collapse="!tenants.showDemoPanel" dir="rtl" class="row" style="margin: 40px;">
+				
+				<div dir="ltr">								
+					<select tooltip="בחר בתבנית שעוצבה מראש. כל תבנית יכולה להכיל סמס, מייל ומכתב" ng-class="{'data_required': tenants.highlightTemplate}" dir="rtl" class="form-control" ng-change="tenants.templateChanged()" ng-model="tenants.templateData" ng-options="template.name for template in tenants.templates">
+					<!-- http://stackoverflow.com/questions/14706986/angularjs-empty-first-element-in-dropdown-list -->
+					<option value="">-----בחרו בתבנית הרצויה-----</option>
+					</select>	
+				</div>	
+				
+				<br/>
+				
+				<div ng-show="tenants.templateData.name.length">
+					<button ng-click="tenants.saveTamplatesChanges(tenants.templateData)" style="width: 100%" class="btn btn-primary">שמור שינויים עבור תבנית: <span class="bold">{{tenants.templateData.name}} <span><span ng-show="tenants.isLoading()"><i class="fa fa-spin fa-spinner"></i></span></button>
+					<br/>
+					<br/>
+				</div>
+				
+				<tabset collapse="!tenants.templateData.name.length">
+					<tab>
+						<tab-heading><i class="fa fa-comment-o"></i></tab-heading>
+						<textarea style="height: 300px; width: 100%" ng-model="tenants.templateData.sms_content"></textarea>												
+					</tab>
+					<tab><tab-heading><i class="fa fa-envelope-o"></i></tab-heading>						
+						<table>
+							<tr>
+								<td class="bold">
+									נושא:&nbsp; 
+								</td>
+								<td style="width: 100%;">
+									<input style="margin-top: 20px; margin-bottom: 20px;" placeholder="נושא אימייל" class="form-control" ng-model="tenants.templateData.mail_subject"></input>
+								</td>
+							</tr>
+						</table>						
+						<textarea class="tiny_mail"  ui-tinymce="tenants.mail_tinyConfig" ng-model="tenants.templateData.mail_content"></textarea>
+						
+					</tab>
+					<tab><tab-heading><i class="fa fa-file-word-o"></i></tab-heading>						
+						<textarea class="tiny_letter"  ui-tinymce="tenants.letter_tinyConfig" ng-model="tenants.templateData.letter_content"></textarea>
+					</tab>
+				</tabset>
+										
+			</div>
+			
+			<!-- /.panel-heading -->
+			<div class="panel-body">
+				
+				<div dir="rtl" class="row">	
+					<table width="99%" style="margin-right: 15px !important;">
+						<tr>
+							<td style="width: 2px">
+								<table>
+									<tr>
+										<td>
+											<a href="javascript:void(0);" ng-click="tenants.addAllBuildings()">
+												<i tooltip="הוסף את כל הבניינים" class="fa fa-plus-circle"></i>
+											</a>
+										</td>
+									</tr>
+									
+									<tr>
+										<td>
+											<a href="javascript:void(0);" ng-click="tenants.removeAllBuildings()">
+												<i tooltip="הסר את כל הבניינים" class="fa fa-minus-circle"></i>
+											</a>
+										</td>
+									</tr>
+								</table>
+							</td>
+							<td>
+								<!-- https://github.com/angular-ui/ui-select2 -->
+								<!-- http://plnkr.co/edit/pFkY5f?p=preview -->
+								<!-- http://stackoverflow.com/questions/17022015/angular-ng-options-in-select2-settings-value-property -->
+								<div tooltip="לחיצה על שדה זה תפתח את רשימת כל הבניינים והקלדה תשלים אוטומטית שמות של בניינים, לפנק, לפנק, לפנק" dir="rtl" class="col-md-12">	
+									<select										
+										dir="rtl"
+										style="width: 100%"										
+										id="availableBuildings"
+										ui-select2 = "{minimumInputLength : 1}"
+										multiple
+										ng-model='tenants.selectedBuildings'
+										data-placeholder='התחל להקליד שם בנין'										
+										name='locations'
+										ng-change='tenants.GetTenants()'>
+										<option value=""></option>
+										<option ng-repeat="(id, building) in tenants.allBuildings" fa_icon="{{building.fa_icon}}" value="{{building.id}}">{{building.name}}</option>						   
+									</select>					
+								</div>
+							</td>
+						</tr>						
+					</table>
+				</div>
+				<input ng-model="tenants.show_only_debts" ng-change="tenants.GetTenants()" type="checkbox"/>&nbsp;&nbsp;&nbsp;&nbsp;הצג רק דיירים בחוב מעל	<input style="width: 60px;" ng-model="tenants.minimal_debt" ng-change="tenants.GetTenants()" placeholder="הקש חוב  "></input>&nbsp;ש"ח
+				<br/>
+				<input ng-model="tenants.show_only_consecutive_debts" ng-change="tenants.GetTenants()" type="checkbox"/>&nbsp;&nbsp;&nbsp;&nbsp;הצג דיירים שחייבים את כל התקופה שבין {{tenants.user.start_dt | date : 'dd-MM-yyyy'}} לבין {{tenants.user.finish_dt | date : 'dd-MM-yyyy'}}	
+				<br/>
+				
+				<div style="padding-top: 20px;" ng-show="tenants.showSendSummery" dir="rtl" class="row">
+					
+					<div dir="rtl" class="col-md-12">	
+						<alert type="success" close="tenants.showSendSummery = false;">התראות נשלחו בהצלחה לדיירים. <a ng-href="#history">צפו בהם עכשיו</a></alert>
+					</div>				
+				</div>								
+					
+				<div ng-show="tenants.selectedBuildings.length" >
+					<table>
+					<tr>
+					<td>
+					<table>
+					<tr>
+					<td><i class="fa fa-male owner"></i></td>
+					<td> - בעלים</td>
+					</tr>
+					<tr>
+					<td><i class="fa fa-male renter"></i></td>
+					<td> - שוכרים</td>					
+					</tr>
+					</table>					
+					</td>
+					<td width="88%">
+					<div class="sam_title" dir="rtl">
+						<!-- <a ng-show="tenants.selectedBuildings.length == 1" href="/{{tenants.allBuildings[tenants.selectedBuildings[0]].based_on_file}}">
+							<i tooltip="הורד עותק של הקובץ שמייצג את הבנין" class="fa fa-download fa-fw colorInfo" ></i>
+						</a> -->						
+						
+						<span dir="rtl" class="sam_blue_bold">{{tenants.buildingDescription}}</span><span class="sam_blue"> | </span>
+						<span dir="rtl" class="sam_red">₪{{tenants.total_tenants_debt | number}} חובות</span><span class="sam_blue"> | </span>			
+						<span dir="rtl" class="sam_yellow">{{tenants.elements.length}}	דיירים</span>
+					</div>
+					<div class="sam_blue_bold sam_secondary_title" ng-show="tenants.selectedBuildings.length == 1"  dir="rtl">
+						<a ng-show="tenants.selectedBuildings.length == 1" href ng-click="tenants.UpdateDataBase(tenants.selectedBuildings[0])">
+							<i ng-class="{'fa-spin': tenants.database_loading}" tooltip="קרא נתונים מהקובץ שמייצג את בנין זה וטען אותם למערכת" class="fa fa-database fa-fw colorInfo" ></i>
+						</a>
+						עודכן לאחרונה: {{tenants.allBuildings[tenants.selectedBuildings[0]].last_updated}}
+					</div>
+					</td>
+					<td>
+					<table>
+					<tr>
+					<td><i class="fa fa-comment-o"></i></td>
+					<td> - סמס</td>
+					</tr>
+					<tr>
+					<td><i class="fa fa-envelope-o"></i></td>
+					<td> - מייל</td>					
+					</tr>
+					<tr>
+					<td><i class="fa fa-file-word-o"></i></td>
+					<td> - מכתב</td>
+					</tr>
+					</table>					
+					</td>
+					</tr>
+					</table>
+				</div>
+				
+				<div id="filter_checkbox_headers" collapse="!tenants.showColumnPanel">
+					<span style="margin-right: 10px; font-weight: bold;">הצג\הסתר עמודות:</span>
+					<input ng-show="tenants.selectedBuildings.length > 1" class="sam_column_checkbox" ng-model="tenants.column_building_name" type="checkbox"/><span ng-show="tenants.selectedBuildings.length > 1">שם בנין |</span>
+					<input class="sam_column_checkbox" ng-model="tenants.column_apartment" type="checkbox"/>דירה |
+					<input class="sam_column_checkbox" ng-model="tenants.column_tenant_name" type="checkbox"/>שם דייר |
+					<input class="sam_column_checkbox" ng-model="tenants.column_phones" type="checkbox"/>טלפונים |
+					<input class="sam_column_checkbox" ng-model="tenants.column_mails" type="checkbox"/>מיילים |
+					<input class="sam_column_checkbox" ng-model="tenants.column_debt_description" type="checkbox"/>סוג חוב |
+					<input class="sam_column_checkbox" ng-model="tenants.column_payment" type="checkbox"/>תשלום חודשי |
+					<input class="sam_column_checkbox" ng-model="tenants.column_months" type="checkbox"/>חודשי חוב |
+					<input class="sam_column_checkbox" ng-model="tenants.column_debt" type="checkbox"/>חוב
+				</div>
+				
+				<table id="tenants_table" dir='rtl' ng-table="tenants.tableParams">
+					<tr>
+						<th>
+							<div  class="btn-group">
+								<button class="btn btn-default dropdown-toggle btn-xs" data-toggle="dropdown">
+									<i ng-click="tenants.masterCheckBoxClick($event)" ng-class="{'fa-square-o': tenants.masterCheckBoxState == 1, 'fa-minus-square-o': tenants.masterCheckBoxState == 2, 'fa-check-square-o': tenants.masterCheckBoxState == 3}" class="fa fa-lg"></i> <span class="caret"></span>						
+								</button>
+								<ul class="dropdown-menu">
+									<li>
+										<a href="javascript:void(0);" ng-click="tenants.selectAll()"><i class="fa fa-male "></i>&nbsp;&nbsp;&nbsp;&nbsp;כולם</a>
+									</li>
+									<li>
+										<a href="javascript:void(0);" ng-click="tenants.clearSelections()"><i class="fa fa-male disabled "></i>&nbsp;&nbsp;&nbsp;&nbsp;אף אחד</a>
+									</li>
+									<li role="presentation" class="divider"></li>
+									<li role="presentation" class="dropdown-header">חיתוך לפי סוג דייר</li>
+									<li>
+										<a href="javascript:void(0);" ng-click="tenants.selectTenantByType(1)"><i class="fa fa-male owner "></i>&nbsp;&nbsp;&nbsp;&nbsp;בעלים</a>
+									</li>
+									<li>
+										<a href="javascript:void(0);" ng-click="tenants.selectTenantByType(2)"><i class="fa fa-male renter "></i>&nbsp;&nbsp;&nbsp;&nbsp;שוכרים</a>
+									</li>
+									<li>
+										<a href="javascript:void(0);" ng-click="tenants.selectDefactoTenants()"><i class="fa fa-male defecto "></i>&nbsp;&nbsp;&nbsp;&nbsp;דיירים</a>
+									</li>																		
+								</ul>
+							</div>
+						</th>
+						<th ng-show="tenants.selectedBuildings.length > 1 && tenants.column_building_name"
+						class="text-center sortable" ng-class="{
+							'sort-asc': tenants.tableParams.isSortBy('name', 'asc'),
+							'sort-desc': tenants.tableParams.isSortBy('name', 'desc')
+						  }"
+						ng-click="tenants.tableParams.sorting('name', tenants.tableParams.isSortBy('name', 'asc') ? 'desc' : 'asc')">
+							שם בנין
+						</th>
+						<th ng-show="tenants.column_apartment"
+						class="text-center sortable" ng-class="{
+							'sort-asc': tenants.tableParams.isSortBy('apartment_number', 'asc'),
+							'sort-desc': tenants.tableParams.isSortBy('apartment_number', 'desc')
+						  }"
+						ng-click="tenants.tableParams.sorting('apartment_number', tenants.tableParams.isSortBy('apartment_number', 'asc') ? 'desc' : 'asc')">
+							דירה
+						</th>
+						<th ng-show="tenants.column_tenant_name"
+						class="text-center sortable" ng-class="{
+							'sort-asc': tenants.tableParams.isSortBy('tenant_name', 'asc'),
+							'sort-desc': tenants.tableParams.isSortBy('tenant_name', 'desc')
+						  }"
+						ng-click="tenants.tableParams.sorting('tenant_name', tenants.tableParams.isSortBy('tenant_name', 'asc') ? 'desc' : 'asc')">
+							שם דייר
+						</th>
+						<th ng-show="tenants.column_phones"
+						class="text-center sortable" ng-class="{
+							'sort-asc': tenants.tableParams.isSortBy('tenant_phones', 'asc'),
+							'sort-desc': tenants.tableParams.isSortBy('tenant_phones', 'desc')
+						  }"
+						ng-click="tenants.tableParams.sorting('tenant_phones', tenants.tableParams.isSortBy('tenant_phones', 'asc') ? 'desc' : 'asc')">
+							טלפונים
+						</th>
+						<th ng-show="tenants.column_mails"
+						class="text-center sortable" ng-class="{
+							'sort-asc': tenants.tableParams.isSortBy('tenant_mails', 'asc'),
+							'sort-desc': tenants.tableParams.isSortBy('tenant_mails', 'desc')
+						  }"
+						ng-click="tenants.tableParams.sorting('tenant_mails', tenants.tableParams.isSortBy('tenant_mails', 'asc') ? 'desc' : 'asc')">
+							מיילים
+						</th>
+						<th ng-show="tenants.column_debt_description"
+						class="text-center sortable" ng-class="{
+							'sort-asc': tenants.tableParams.isSortBy('debt_description', 'asc'),
+							'sort-desc': tenants.tableParams.isSortBy('debt_description', 'desc')
+						  }"
+						ng-click="tenants.tableParams.sorting('debt_description', tenants.tableParams.isSortBy('debt_description', 'asc') ? 'desc' : 'asc')">
+							סוג חוב
+						</th>
+						<th ng-show="tenants.column_payment"
+						class="text-center sortable" ng-class="{
+							'sort-asc': tenants.tableParams.isSortBy('monthly_payment', 'asc'),
+							'sort-desc': tenants.tableParams.isSortBy('monthly_payment', 'desc')
+						  }"
+						ng-click="tenants.tableParams.sorting('monthly_payment', tenants.tableParams.isSortBy('monthly_payment', 'asc') ? 'desc' : 'asc')">
+							תשלום חודשי
+						</th>
+						<th ng-show="tenants.column_months"
+						class="text-center sortable" ng-class="{
+							'sort-asc': tenants.tableParams.isSortBy('months', 'asc'),
+							'sort-desc': tenants.tableParams.isSortBy('months', 'desc')
+						  }"
+						ng-click="tenants.tableParams.sorting('months', tenants.tableParams.isSortBy('months', 'asc') ? 'desc' : 'asc')">
+							חודשי חוב
+						</th>
+						<th ng-show="tenants.column_debt"
+						class="text-center sortable" ng-class="{
+							'sort-asc': tenants.tableParams.isSortBy('total_debt', 'asc'),
+							'sort-desc': tenants.tableParams.isSortBy('total_debt', 'desc')
+						  }"
+						ng-click="tenants.tableParams.sorting('total_debt', tenants.tableParams.isSortBy('total_debt', 'asc') ? 'desc' : 'asc')">
+							חוב
+						</th>
+						<th ng-repeat="dynamic_field in tenants.dynamic_fields" class="text-center sortable" ng-class="{
+							'sort-asc': tenants.tableParams.isSortBy(dynamic_field.template_name, 'asc'),
+							'sort-desc': tenants.tableParams.isSortBy(dynamic_field.template_name, 'desc')
+						  }"
+						ng-click="tenants.tableParams.sorting(dynamic_field.template_name, tenants.tableParams.isSortBy(dynamic_field.template_name, 'asc') ? 'desc' : 'asc')">
+							{{dynamic_field.excel_header}}
+						</th>
+						<th> 
+							<input ng-change="tenants.handleMasterAlertColumn('sms')" class="checkBoxAlerts" type="checkbox" ng-model="tenants.master_alert_column_sms"/>
+							<i tooltip="סמן\נקה את כל הסמסים" class="fa fa-comment-o"></i>
+						</th>
+						<th>
+							<input ng-change="tenants.handleMasterAlertColumn('mail')" class="checkBoxAlerts" type="checkbox" ng-model="tenants.master_alert_column_mail"/>
+							<i tooltip="סמן\נקה את כל המיילים" class="fa fa-envelope-o"></i></div>
+						</th>
+						<th>
+							<input ng-change="tenants.handleMasterAlertColumn('letter')" class="checkBoxAlerts" type="checkbox" ng-model="tenants.master_alert_column_letter"/>
+							<i tooltip="סמן\נקה את כל המכתבים" class="fa fa-file-word-o"></i></div>
+						</th>
+					</tr>
+					<tr ng-repeat="row in tenants.elements track by row.tenant_id + row.debt_description"  ng-class-odd="'odd'" ng-class="{modified: row.tenant_selected}">
+					
+						<td class="sam_td tenant_checkbox">
+							<input ng-change="tenants.updateTenantAlerts(row)" ng-model="row.tenant_selected" class="checkBoxAlerts" type="checkbox"/>
+						</td>
+												
+						<td data-title="'שם בנין'" ng-show="tenants.selectedBuildings.length > 1 && tenants.column_building_name" sortable="name" class="sam_td building_name">
+							<a tooltip="הצג מידע עבור בנין זה בלבד" ng-href="#/tenants?buildingIds={{row.building_id}}">{{row.name}}</a>
+						</td>
+						
+						<td data-title="'דירה'" ng-show="tenants.column_apartment" sortable="index" class="bold sam_td tenant_apartment">
+							{{row.apartment_number}}
+						</td>
+												
+						<td data-title="'שם דייר'" ng-show="tenants.column_tenant_name" sortable="tenant_name" class="bold sam_td tenant_name">
+							<i ng-class="tenants.getTenantType(row.tenant_type)" class="fa fa-male"></i>
+							<span>{{row.tenant_name}}</span>
+						</td>
+						
+						<td data-title="'טלפונים'" ng-show="tenants.column_phones" dir="ltr" sortable="tenant_phones" class="sam_td tenant_phones">							
+							<a href="#" editable-text="row.tenant_phones">{{ row.tenant_phones }}</a>							
+						</td>
+						
+						<td data-title="'מיילים'" ng-show="tenants.column_mails" dir="ltr" sortable="tenant_mails" class="sam_td tenant_mails">							
+							<a href="#" editable-text="row.tenant_mails">{{ row.tenant_mails }}</a>
+						</td>												
+
+						<td data-title="'סוג חוב'" ng-show="tenants.column_debt_description" dir="ltr" sortable="debt_description" class="sam_td tenant_mails">							
+							{{row.debt_description}}							
+						</td>
+												
+						<td data-title="'תשלום חודשי'" ng-show="tenants.column_payment" dir="ltr" sortable="monthly_payment" class="sam_td tenant_debts">
+							{{row.monthly_payment | number:0}} ₪
+						</td>
+						
+						<td data-title="'חודשי חוב'" ng-show="tenants.column_months" dir="ltr" sortable="months" class="sam_td tenant_months">
+							{{row.months}}
+						</td>
+						
+						<td data-title="'חוב'" ng-show="tenants.column_debt" dir="ltr" sortable="total_debt" class="sam_td tenant_debts">
+							{{row.total_debt | number:0}} ₪
+						</td>
+						
+						<td data-title="{{dynamic_field.excel_header}}" ng-repeat="dynamic_field in tenants.dynamic_fields" dir="ltr" sortable="dynamic_field.template_name" class="sam_td tenant_debts">
+							{{row[dynamic_field.template_name]}}
+						</td>
+						
+						<td  class="sam_td tenant_sms_checkbox">
+							<input ng-disabled="tenants.doesDestinationExist(row, 'sms')" ng-model="row['send_sms']" class="checkBoxAlerts" type="checkbox"/>
+							<i tooltip="שלח סמס לדייר זה (רק במידה ויש לדייר זה נייד במערכת)" ng-class="tenants.getRowAlertState('sms', row)" class="fa"></i>
+						</td>
+						
+						<td class="sam_td tenant_mail_checkbox">
+							<input ng-disabled="tenants.doesDestinationExist(row, 'mail')" ng-model="row['send_mail']" class="checkBoxAlerts" type="checkbox"/>
+							<i tooltip="שלח מייל לדייר זה (רק במידה ויש לדייר זה מייל במערכת)" ng-class="tenants.getRowAlertState('mail', row)" class="fa"></i>
+						</td>
+						
+						<td class="sam_td tenant_letter_checkbox">
+								<input ng-disabled="tenants.doesDestinationExist(row, 'letter')" ng-model="row['send_letter']" class="checkBoxAlerts" type="checkbox"/>
+								<i tooltip="הכן מכתב לדייר זה" ng-class="tenants.getRowAlertState('letter', row)" class="fa"></i>
+						</td>
+						
+					</tr>					 
+				</table>
+				
+                            
+			</div>
+			<!-- /.panel-body -->
+		</div>
+		<!-- /.panel -->
+	</div>
+</div>

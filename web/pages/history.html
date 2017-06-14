@@ -1,0 +1,209 @@
+﻿<script type="text/ng-template" id="smart_checkbox_header.html">
+	<div  class="btn-group">
+		<button class="btn btn-default dropdown-toggle btn-xs" data-toggle="dropdown">
+			<i ng-click="history.masterCheckBoxClick($event)" ng-class="{'fa-square-o': history.masterCheckBoxState == 1, 'fa-minus-square-o': history.masterCheckBoxState == 2, 'fa-check-square-o': history.masterCheckBoxState == 3}" class="fa fa-lg"></i> <span class="caret"></span>						
+		</button>
+		<ul class="dropdown-menu">
+			<li>
+				<a href="javascript:void(0);" ng-click="history.selectAll()"><i class="fa fa-history "></i>&nbsp;&nbsp;&nbsp;&nbsp;כולם</a>
+			</li>
+			<li>
+				<a href="javascript:void(0);" ng-click="history.clearSelections()"><i class="fa fa-history disabled "></i>&nbsp;&nbsp;&nbsp;&nbsp;אף אחד</a>
+			</li>
+			<li role="presentation" class="divider"></li>
+			<li role="presentation" class="dropdown-header">חיתוך לפי פעילות</li>
+			<li>
+				<a href="javascript:void(0);" ng-click="history.selectAlertByType(0)"><i class="fa fa-comment-o"></i>&nbsp;&nbsp;&nbsp;&nbsp;סמסים</a>
+			</li>
+			<li>
+				<a href="javascript:void(0);" ng-click="history.selectAlertByType(1)"><i class="fa fa-envelope-o"></i>&nbsp;&nbsp;&nbsp;&nbsp;מיילים</a>
+			</li>
+			<li>
+				<a href="javascript:void(0);" ng-click="history.selectAlertByType(2)"><i class="fa fa-file-word-o"></i>&nbsp;&nbsp;&nbsp;&nbsp;מכתבים</a>
+			</li>			
+		</ul>
+	</div>
+</script>
+
+<script type="text/ng-template" id="recepientTypeAheadTemplate.html">
+		<a>
+			<i class="fa" ng-class="match.model.icon" ></i>
+			<span bind-html-unsafe="match.label | typeaheadHighlight:query"></span>
+		</a>
+</script>
+	
+<div class="row">
+	<div class="col-lg-12">
+		<div class="panel panel-default">
+			<div dir="rtl" class="panel-heading">								
+				<div dir="ltr" class="col-md-3 datePickerComponent">
+					<span dir="rtl" class="datePickerLabel">
+					 תאריך סיום להצגת פעילות
+					</span>&nbsp;
+					<p class="input-group">					  
+					  <input ng-disabled="true" dir="rtl" ng-change="history.GetAlerts()" type="text" class="form-control" datepicker-popup="dd-MM-yyyy" ng-model="history.user.finish_dt" is-open="history.opened_end" ng-required="true"  />
+					  <span class="input-group-btn">
+						<button type="button" class="btn btn-default" ng-click="history.open_end($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+					  </span>
+					</p>
+				</div>
+				
+				<div dir="ltr" class="col-md-3 datePickerComponent">
+					<span dir="rtl" class="datePickerLabel">
+					 תאריך התחלה להצגת פעילות
+					</span>&nbsp;
+					<p class="input-group">
+					  <input ng-disabled="true" dir="rtl" ng-change="history.GetAlerts()" type="text" class="form-control" datepicker-popup="dd-MM-yyyy" ng-model="history.user.start_dt" is-open="history.opened_start" ng-required="true"  />
+					  <span class="input-group-btn">
+						<button type="button" class="btn btn-default" ng-click="history.open_start($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+					  </span>
+					</p>
+				</div>
+															
+				<a  tooltip="טען נתונים שוב (טעינה מחדש תנקה את כל הבחירות שלכם)" href="javascript:void(0);" class="btn btn-default btn-lg" ng-click="history.GetAlerts()"><i ng-class="history.isLoading()" class="fa fa-refresh fa-lg"></i></a>
+				
+				<a tooltip="פותח או סוגר את בקרת השליטה בעמודות להצגה בטבלה" href="javascript:void(0);" class="btn btn-default btn-lg" ng-click="history.showColumnPanel = !history.showColumnPanel"><i class="fa fa-list-ul fa-lg"></i></a>
+				
+				<div ng-show="history.total_alerts" tooltip="מגוון פעולות שניתן לבצע על הרשומות שבחרתם" class="btn-group">
+					<button class="btn btn-default dropdown-toggle btn-lg" data-toggle="dropdown">
+						<i class="fa fa-lg fa-history"></i>
+						<span class="caret"></span>	
+						<span class="badge_success badge badge_header">{{history.total_alerts}}</span>
+					</button>
+					<ul class="dropdown-menu">
+						<li>
+							<a href="javascript:void(0);" ng-click="history.user.exportHtmlTableToPdf('alerts_table', 'lskd')"><i class="fa fa-file-pdf-o"></i>&nbsp;&nbsp;יצא לקובץ pdf</a>
+						</li>	
+												
+						<li ng-class='{disabled: (history.totalAlertsFromType(0) + history.totalAlertsFromType(1)) == 0}'>
+							<a href="javascript:void(0);" ng-click="history.resendAlertsFromHistory()"><i class="fa fa-send-o"></i>&nbsp;&nbsp;{{history.totalAlertsFromType(0) + history.totalAlertsFromType(1)}} התראות לשליחה</a>
+						</li>
+						<li ng-class='{disabled: history.totalAlertsFromType(2) == 0}'>
+							<a href="javascript:void(0);" ng-click="history.htmlToPdf()"><i class="fa fa-print"></i>&nbsp;&nbsp;{{history.totalAlertsFromType(2)}} מכתבים להדפסה</a>
+						</li>																		
+						<li>
+							<a href="javascript:void(0);" ng-click="history.deleteAlertsFromHistory()"><i class="fa fa-trash-o"></i>&nbsp;&nbsp;מחק </a>
+						</li>
+					</ul>
+				</div>
+				
+			</div>										
+			<!-- /.panel-heading -->
+			<div class="panel-body">									
+					
+				<!-- <div>
+					<table>
+						<tr>
+							<td>
+								<table>
+									<tr>
+										<td><i class="fa fa-comment-o"></i></td>
+										<td> - סמס</td>
+									</tr>
+									<tr>
+										<td><i class="fa fa-envelope-o"></i></td>
+										<td> - מייל</td>					
+									</tr>
+									<tr>
+										<td><i class="fa fa-file-word-o"></i></td>
+										<td> - מכתב</td>
+									</tr>
+								</table>					
+							</td>
+							<td width="93%">
+								<div class="sam_title" dir="rtl">
+									<span dir="rtl" class="sam_blue_bold">{{history.historyAlerts.length}} התראות</span>
+								</div>
+							</td>					
+						</tr>
+					</table>
+				</div> -->
+				<br/>
+				<div dir="rtl" class="row">	
+
+					<div class="col-md-3">	
+						<input ng-class="{'filter_on': history.destination.length }" tooltip="משלים אוטומטית מיילים וניידים ,לפנק, לפנק, לפנק" ng-change="history.AutoCompleteChange(history.destination)" typeahead-on-select="history.GetAlerts()" type="text" ng-model="history.destination" placeholder="הקלד ניד או מייל אליהם הגיעו ההודעות" typeahead="data as data for data in history.guessAlertByColumn($viewValue, 'destination')" typeahead-loading="loadingLocations" typeahead-min-length="2" class="form-control">
+					</div>
+					
+					<div class="col-md-3">	
+						<input ng-class="{'filter_on': history.source.length }" tooltip="משלים אוטומטית מיילים וניידים ,לפנק, לפנק, לפנק" ng-change="history.AutoCompleteChange(history.source)" typeahead-on-select="history.GetAlerts()" type="text" ng-model="history.source" placeholder="הקלד נייד או מייל מהם יצאו ההודעות" typeahead="data as data for data in history.guessAlertByColumn($viewValue, 'source')" typeahead-loading="loadingLocations" typeahead-min-length="2" class="form-control">
+					</div>
+					
+					<div class="col-md-3">	
+						<input ng-class="{'filter_on': history.recepientName.length }" tooltip="משלים אוטומטית שמות של דיירים, עובדים או בעלי מקצוע , לפנק, לפנק, לפנק" ng-change="history.AutoCompleteChange(history.recepientName)" typeahead-on-select="history.GetAlerts()" type="text" ng-model="history.recepientName" placeholder="הקלד שם דייר, עובד או בעל מקצוע" typeahead="data as data for data in history.guessAlertByColumn($viewValue, 'recepient_name')" typeahead-loading="loadingLocations" typeahead-min-length="2" typeahead-template-url="recepientTypeAheadTemplate.html" class="form-control">
+					</div>
+					
+					<div class="col-md-3">	
+						<input ng-class="{'filter_on': history.buildingName.length }" tooltip="משלים אוטומטית שמות של בניינים, לפנק, לפנק, לפנק" ng-change="history.AutoCompleteChange(history.buildingName)" typeahead-on-select="history.GetAlerts()" auto-focus  type="text" ng-model="history.buildingName" placeholder="הקלד שם בנין" typeahead="data as data for data in history.guessAlertByColumn($viewValue, 'building_name')" typeahead-loading="loadingLocations" typeahead-min-length="2" class="form-control">
+					</div>
+				</div>
+												
+				<br/>	
+				
+				<div id="filter_checkbox_headers" collapse="!history.showColumnPanel">
+					<span style="margin-right: 10px; font-weight: bold;">הצג\הסתר עמודות:</span>
+					<input class="sam_column_checkbox" ng-model="history.column_alert_type" type="checkbox"/>סוג |
+					<input class="sam_column_checkbox" ng-model="history.column_alert_building_name" type="checkbox"/>שם בנין |
+					<input class="sam_column_checkbox" ng-model="history.column_alert_recepient_name" type="checkbox"/>שם נמען |
+					<input class="sam_column_checkbox" ng-model="history.column_alert_updated" type="checkbox"/>זמן שליחה |
+					<input class="sam_column_checkbox" ng-model="history.column_alert_source" type="checkbox"/>מאת |
+					<input class="sam_column_checkbox" ng-model="history.column_alert_destination" type="checkbox"/>עבור					
+				</div>
+				
+				<table id="alerts_table" dir='rtl' ng-table="history.tableParams">
+				
+					<tr ng-repeat-start="row in history.historyAlerts track by row.alert_id"" ng-class-odd="'odd'" ng-class="{modified: row.alert_selected}">
+						<td header="'smart_checkbox_header.html'" class="sam_td alert_checkbox">
+							<input ng-change="history.updateMasterCheckBoxState()" ng-model="row.alert_selected" class="checkBoxAlerts" type="checkbox"/>
+							<i tooltip="מכתב,סמס או מייל, תסתכל על האייקון" ng-class="{'fa-comment-o': row.alert_type == 0, 'fa-envelope-o': row.alert_type == 1, 'fa-file-word-o': row.alert_type == 2 }" class="fa fa-xs"></i>
+							<i ng-show="row.external_folder.length" tooltip="להודעה זו ישנם קבצים מצורפים" class="fa fa-paperclip fa-xs"></i>
+						</td>
+						<td ng-show="history.column_alert_type" data-title="'סוג'" sortable="'alert_type'" class="sam_td alert_type">{{history.alertHebrewDescOf[row.alert_type]}}</td>
+						<td ng-show="history.column_alert_building_name" data-title="'שם בנין'" sortable="'building_name'" class="bold sam_td"><i class="fa fa-building"></i>&nbsp; {{row.building_name}}</td>
+						<td ng-show="history.column_alert_recepient_name" data-title="'שם נמען'" sortable="'recepient_name'" class="bold sam_td"><i tooltip="דייר, בעל מקצוע או עובד חברה, תסתכל על האייקון" ng-class="history.iconOf[row.recepient_type]" class="fa fa-xs"></i>&nbsp;&nbsp;{{row.recepient_name}}</td>                                
+						<td ng-show="history.column_alert_updated" data-title="'זמן שליחה'" sortable="'updated'" class="sam_td">{{row.updated.replace(' ', ' | ')}}</td>				
+						<td ng-show="history.column_alert_source" data-title="'מאת'" sortable="'source'" class="sam_td">{{row.source}}</td>
+						<td ng-show="history.column_alert_destination" data-title="'עבור'" sortable="'destination'" class="sam_td">{{row.destination}}</td>                
+						<td class="sam_td buttons_td">
+							<button tooltip="בוא נראה מה שלחנו פה" ng-click="history.markAlert(row.alert_id)">
+								<i ng-class="{'fa-eye-slash': row.alert_id == history.watchAlert, 'fa-eye': row.alert_id != history.watchAlert}" class="fa fa-xs"></i></button>
+							&nbsp;&nbsp
+							<button ng-if="row.alert_type == 0 || row.alert_type == 1" tooltip="שלח שוב" ng-click="history.resendAlertsFromHistory(row.alert_id)">
+								<i class="fa fa-send-o fa-xs"></i>
+							</button>
+							
+							<button ng-if="row.alert_type == 2" tooltip="הכן מכתב להדפסה" ng-click="history.htmlToPdf(row.alert_id)">
+								<i class="fa fa-print fa-xs"></i>
+							</button>						
+							&nbsp;&nbsp
+							<button tooltip="איזה שיעמום, אתה לפח עכשיו, לתמיד!" ng-click="history.deleteAlertsFromHistory(row.alert_id)">
+								<i class="fa fa-trash-o fa-xs sam_red"></i>
+							</button>
+						</td>
+					
+					</tr>
+					
+					 <tr ng-repeat-end ng-show="history.watchAlert === row.alert_id">						
+						<td class="sam_td highlight_td" colspan="8" ng-bind-html="history.showInnerHtml(row.alert_data, row.meta_data)"></td>
+					</tr>
+				
+				</table>
+								
+				<button ng-show="history.maximum_records > history.historyAlerts.length" style="width: 100%;" ng-click="history.limit = history.limit  + 50; history.GetAlerts(true);">
+					הצג עוד תוצאות
+					<span ng-show="history.isLoading()"><i class="fa fa-spin fa-spinner"></i></span>
+				</button>				
+				<div ng-show="history.zeroMatch" dir="rtl" class="row">
+					<br/>
+					<div dir="rtl" class="col-md-12">	
+						<alert type="danger" close="history.zeroMatch = false;">לא נמצאה התאמה</alert>
+					</div>				
+				</div>
+				
+                            
+			</div>
+			<!-- /.panel-body -->
+		</div>
+		<!-- /.panel -->
+	</div>
+</div>

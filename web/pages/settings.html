@@ -1,0 +1,74 @@
+﻿
+<div class="row">
+	<div class="col-lg-12">
+		<div class="panel panel-default">
+			<div dir="rtl" class="panel-heading">								
+				
+				<a tooltip="טען נתונים שוב" href="javascript:void(0);" class="btn btn-default btn-lg" ng-click="settings.GetFields()"><i ng-class="settings.isLoading()" class="fa fa-refresh fa-lg"></i></a>
+				<a tooltip="הוסף שדה חדש" href="javascript:void(0);" class="btn btn-default btn-lg" ng-click="settings.showAddForm = !settings.showAddForm; settings.reset_session();"><i class="fa fa-plus-circle fa-lg"></i></a>																
+				
+			</div>						
+			
+						
+			<!-- /.panel-heading -->
+			<div class="panel-body">
+				<div dir="rtl" class="row">	
+					<!-- <div dir="rtl" class="sam_title sam_blue_bold">{{settings.staff.length}} עובדי חברה</div>				 -->
+					<form collapse="!settings.showAddForm" name="loginForm" novalidate>
+						<div class="form-group main_title">
+							<h1>{{settings.session.template_name}}</h1>
+						</div>
+						<div class="form-group" ng-class="{'has-error': loginForm.name.$invalid}">
+							<input class="form-control" name="template_name" type="text" placeholder="שם שדה (באנגלית)" required ng-model="settings.session.template_name" />							
+						</div>
+						<div class="form-group">
+							<select class="form-control" ng-model="settings.session.field_type" ng-options="field_id as field_type for (field_id,field_type) in settings.excelTypeOf">
+							</select>
+						</div>	
+						<div class="form-group">
+							<input class="form-control" name="excel_header" type="text" placeholder="עמודה באקסל" ng-model="settings.session.excel_header" />							
+						</div>												
+						<div class="form-group">
+							<input class="form-control" name="comment" type="text" placeholder="הערות" ng-model="settings.session.comment" />							
+						</div>
+						
+						<div class="form-group">
+							<button ng-click="settings.addNewField()" type="submit" class="btn btn-primary" value="Login" title="Login" ng-disabled="!loginForm.$valid">
+								<span>סיים</span>
+							</button>
+							<button ng-click="settings.session = {};" class="btn btn-warning">
+								<span>נקה</span>
+							</button>
+							<button ng-click="settings.showAddForm = false;settings.session = {};" class="btn btn-danger">
+								<span>בטל</span>
+							</button>							
+						</div>						
+					</form>
+				</div>
+
+				<table dir='rtl' ng-table="settings.tableParams">				
+					<tr ng-repeat="row in settings.staff"  ng-class-odd="'odd'" ng-class="{modified: row.modified_now}">													
+						<td data-title="'שם שדה'" sortable="'template_name'" class="sam_td">{{row.template_name}}</td>
+						<td data-title="'סוג שדה'" sortable="'field_type'" class="sam_td">{{settings.excelTypeOf[row.field_type]}}</td>
+						<td data-title="'עמודה באקסל'"  sortable="'name'" class="bold sam_td">{{row.excel_header}}</td>  																	
+						<td data-title="'הערה'" sortable="'comment'" class="sam_td">{{row.comment}}</td>
+						
+						<td class="sam_td buttons_td">
+							<button tooltip="ערוך שדה" ng-click="settings.editField(row)">
+								<i  class="fa-pencil-square-o fa fa-xs"></i></button>
+							&nbsp;&nbsp							
+							<button tooltip="איזה שיעמום, אתה לפח עכשיו, לתמיד!" ng-click="settings.deleteField(row.field_id)">
+								<i class="fa fa-trash-o fa-xs sam_red"></i>
+							</button>
+						</td>				
+					</tr>												
+				</table>
+				
+				<br/>	
+				
+			</div>
+			<!-- /.panel-body -->
+		</div>
+		<!-- /.panel -->
+	</div>
+</div>
