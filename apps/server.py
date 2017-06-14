@@ -1591,7 +1591,7 @@ def fetchAlerts():
             'source': aSource,        
             'updated': alertTimeStamp,
             'external_folder':  external_folder,            
-            'alert_data': open(alertPathToFile).read() if os.path.exists(alertPathToFile) else "%s does not exist" % alertPathToFile, 
+            'alert_data': open(alertPathToFile).read() if os.path.exists(alertPathToFile) else "%s does not exist" % alertPathToFile,
             'alert_selected': False
         } 
         for aId, rType, rName, bName, alertPathToFile, aType, alertMetaData, aDestination, aSource, alertTimeStamp, external_folder
@@ -2231,15 +2231,6 @@ def getServiceReminderData():
     params = bottle.request.query
     tenants_from_building_id = params.tenants_from_building_id
     tenants_from_building_id = int(tenants_from_building_id) if len(tenants_from_building_id) else 0
-
-    fff = os.path.join(params.path, params.alert + '.htm').replace('\\', '/')
-    #fff = 'web/customer_templates/service_reminder/sms.htm'
-
-    print
-    print
-    print fff, os.path.exists(fff)
-    print
-    print
 
     service_data = resolveAlertTemplate(params.path, params.alert, json.loads(params.details), file(os.path.join(params.path, params.alert + '.htm').replace('\\', '/')).read())
     entities = GetMultiTypeElements(True, tenants_from_building_id)
