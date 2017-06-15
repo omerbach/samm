@@ -11,20 +11,26 @@ import utils
  
 #will use send grid only for attacments for now
 def SendGrid(to, fromMail, subject, mailContent, html, attachments=[], inlineImages=[]):  
-    #to be called from a data base
-    sg = sendgrid.SendGridClient('#####', '#####')
+
+    return
+
+    u = utils.config.mailSecondaryUser
+    p = utils.config.mailSecondaryPassword
+
+    sg = sendgrid.SendGridClient(u, p)
     message = sendgrid.Mail()
     message.add_to(to)
     message.set_subject(subject)    
     message.set_html(mailContent)            
     message.set_from(fromMail)    
-    #rrrhhh
+
     for attach in attachments:                
         attach = attach.replace('\\', '/')            
         message.add_attachment(os.path.basename(attach), 
-                               attach)            
-    return    
+                               attach)
+
     status, msg = sg.send(message)
+
     return msg
         
 class MailGunMail(object):
@@ -44,15 +50,14 @@ class MailGunMail(object):
         return final
 
     def send(self, to, fromMail, subject, message, html, attachments=[], inlineImages=[]):
-                        
-        assert not isinstance(to, basestring), 'sendMail expects a list not a string, please correct'
+
         return
-        
-        die()
-        
+        assert not isinstance(to, basestring), 'sendMail expects a list not a string, please correct'
+
         if len(attachments):
             response = SendGrid(to, fromMail, subject, message, html, attachments, inlineImages)
         else:
+            return
             me = fromMail
             recepients = ';'.join(to)
             

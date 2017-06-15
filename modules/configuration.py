@@ -140,6 +140,14 @@ class Config(object):
     @property
     def mailApiKey(self):
         return self.parser.get('alerts', 'mail_api_key')
+
+    @property
+    def mailSecondaryUser(self):
+        return self.parser.get('alerts', 'mail_secondary_user')
+
+    @property
+    def mailSecondaryPassword(self):
+        return self.parser.get('alerts', 'mail_secondary_password')
     
     @property
     def maiFromDebts(self):

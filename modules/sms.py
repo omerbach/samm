@@ -50,13 +50,11 @@ class SmartSmS(BaseSmS):
         except:
             return 0
             
-    def send(self, sorcePhone, destPhone, message):        
-        to = ''.join(c for c in destPhone if c.isdigit())
-        
+    def send(self, sorcePhone, destPhone, message):
         return 50000
-    
-        die()
-        
+
+        to = ''.join(c for c in destPhone if c.isdigit())
+
         #replace 0 with international prefix
         to = "972"+ to[1:]        
         
@@ -79,12 +77,7 @@ class MicroPay(BaseSmS):
         super(MicroPay, self).__init__( "http://www.micropay.co.il/ExtApi/ScheduleSms.php", "http://www.micropay.co.il/ExtApi/ScheduleSms.php")
         
     def credit(self):
-        
-        #return 50000
-    
-        #die()
-                
-        
+
         response = requests.get(url=self.balanceUrl,                                
                 params={ 
                     "uid": 3395,                    
@@ -102,13 +95,11 @@ class MicroPay(BaseSmS):
         
         return balance
             
-    def send(self, sorcePhone, destPhone, message):        
+    def send(self, sorcePhone, destPhone, message):
+        return 50000
+
         to = ''.join(c for c in destPhone if c.isdigit())
         fromPhone = ''.join(c for c in sorcePhone if c.isdigit())
-        return 50000
-    
-        die()
-                
         
         response = requests.post(url=self.sendUrl,                                
                 data={ 
@@ -153,16 +144,13 @@ class Ofrix(BaseSmS):
         except:
             return 0
             
-    def send(self, sorcePhone, destPhone, message): 
+    def send(self, sorcePhone, destPhone, message):
+        return 50000
+
         from lxml import etree
-        
         to = ''.join(c for c in destPhone if c.isdigit())
         fromPhone = ''.join(c for c in sorcePhone if c.isdigit())        
 
-        return 50000
-    
-        die()
-               
         root = etree.Element('Inforu')
         user = etree.Element('User')       
         userName = etree.Element('Username')
