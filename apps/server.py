@@ -2183,7 +2183,7 @@ def bulkServiceRequests(service_request_details, service_dates):
     cost = 0 if service_request_details.get("cost", "") == "" else service_request_details["cost"]
     comment = 0 if service_request_details.get("comment", "") == "" else service_request_details["comment"]
 
-    # insert new ones
+    # insert new ones now
     for d in service_dates:
         service_requests.append((
             description,
