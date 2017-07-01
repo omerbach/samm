@@ -25,6 +25,23 @@
 	</div>
 </script>
 
+<script type="text/ng-template" id="myServicePreventionModalContent.html">
+        <div class="modal-header">
+            <h3 class="modal-title"> מחיקה</h3>
+        </div>
+        <div dir="rtl" style="text-align: right;" class="modal-body">
+			<div>המערכת איתרה קריאה אשר היא חלק מטיפול תקופתי מונע.</div>
+			<div>כחלק מהטיפול התקופתי, ישנן עוד קריאות תקופתיות.</div>
+			<br/>
+			<div>אנא בחר התנהגות רצויה כתוצאה ממחיקת קריאה זו: </div>
+        </div>
+        <div dir="rtl" class="modal-footer">
+            <button class="btn btn-primary" ng-click="ok(0)">מחק קריאה זו בלבד</button>
+            <button class="btn btn-primary" ng-click="ok(1)">מחק את כל הטיפולים המונעים המקושרים לקריאה זו </button>
+            <button class="btn btn-danger" ng-click="cancel()">ביטול</button>
+        </div>
+</script>
+
 <script type="text/ng-template" id="myConfirmationModalContent.html">
         <div class="modal-header">
             <h3 class="modal-title">{{service_request.description}} : שינוי סטטוס ל{{new_status}}</h3>
@@ -254,7 +271,7 @@
 						</div>						
 					</div> -->
 					
-					<div ng-show="!service.showAddForm" class="col-md-3">	
+					<div ng-show="!service.showAddForm" class="col-md-3">
 						<input ng-class="{'filter_on': service.professionalData.name.length }" tooltip="משלים אוטומטית בעלי מקצוע ,לפנק, לפנק, לפנק" ng-change="service.AutoCompleteChange(service.professionalData)" typeahead-on-select="service.GetServiceRequests()" type="text" ng-model="service.professionalData" placeholder="התחל להקליד בעל מקצוע" typeahead="data as data.name for data in service.guessProfessional($viewValue)" typeahead-loading="loadingLocations" class="form-control">
 					</div>
 					
@@ -267,8 +284,18 @@
 					</div>
 					
 					<div ng-show="!service.showAddForm" class="col-md-3">
-						<select ng-class="{'filter_on': service.filterStatus.status != 0 }" tooltip="בחר סטטוס להצגת קריאות שירות" class="form-control" ng-model="service.filterStatus" ng-options="st.desc for st in service.statusesWithIdle" ng-change="service.GetServiceRequests()">					
-						</select>						
+						<table>
+							<tr>
+								<td style="padding-left: 10px;">
+									<select ng-class="{'filter_on': service.filterStatus.status != 0 }" tooltip="בחר סטטוס להצגת קריאות שירות" class="form-control" ng-model="service.filterStatus" ng-options="st.desc for st in service.statusesWithIdle" ng-change="service.GetServiceRequests()">
+									</select>
+								</td>
+								<td>
+									<select ng-class="{'filter_on': service.filterType.status != 0 }" tooltip="בחר סוג להצגת קריאות שירות" class="form-control" ng-model="service.filterType" ng-options="st.desc for st in service.serviceType" ng-change="service.GetServiceRequests()">
+									</select>
+								</td>
+							</tr>
+						</table>
 					</div>
 										
 					
@@ -407,7 +434,7 @@
 				</div>
 				
 				<table id="service_table" dir='rtl' ng-table="service.tableParams">				
-					<tr ng-repeat="row in service.availableServiceRequests track by row.service_id" ng-class-odd="'odd'" ng-class="{modified: row.service_selected}">
+					<tr ng-repeat="row in service.availableServiceRequests track by row.service_id" ng-class-odd="'odd'" ng-class="{modified: row.service_selected, must: row.must_attend}">
 						<td header="'smart_checkbox_header.html'" class="sam_td service_checkbox">
 							<input ng-model="row.service_selected" class="checkBoxAlerts" type="checkbox"/>
 							<div class="btn-group">							
@@ -426,7 +453,7 @@
 							{{service.statusOf[row.status]}}
 						</td>										
 						<td ng-show="service.column_building" data-title="'בנין'" sortable="'building_name'" class="bold sam_td"><!-- <i class="fa fa-building"></i> --> {{row.building_name}}</td>                                
-						<td ng-show="service.column_description" data-title="'תיאור'" sortable="'description'" class="sam_td service_description">{{row.description}}</td>						
+						<td ng-show="service.column_description" data-title="'תיאור'" sortable="'description'" class="sam_td service_description"><i style="padding-left: 5px;" class="fa fa-fire-extinguisher" ng-show="row.prevention_id"></i>{{row.description}}</td>
 						<td ng-show="service.column_category" data-title="'קטגוריה'" sortable="'category'" class="sam_td">{{row.category}}</td>
 						<td ng-show="service.column_tenant" data-title="'דייר מדווח'" sortable="'tenant_name'" class="sam_td"><!-- <i class="fa fa-male"></i> --> {{row.tenant_name}}</td>                                
 						<td ng-show="service.column_worker" data-title="'פותח קריאה'" sortable="'worker_name'" class="sam_td"><!-- <i class="fa fa-users"></i> --> {{row.worker_name}}</td>
@@ -467,7 +494,7 @@
 								<i  class="fa-pencil-square-o fa fa-xs"></i></button>
 							&nbsp;
 																											
-							<button tooltip="מחק קריאת שירות" ng-click="service.deleteServiceRequests(row.service_id)">
+							<button tooltip="מחק קריאת שירות" ng-click="service.deleteServiceRequests(row)">
 								<i class="fa fa-trash-o fa-xs sam_red"></i>
 							</button>
 						</td>				

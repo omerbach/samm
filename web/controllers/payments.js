@@ -628,7 +628,8 @@ angular.module('sam').controller('paymentsController', ['$scope', '$filter','$ht
 		}		
 		return val.toString();
 	};
-	
+
+	//implementing the disabling myself as select2 doesn't work with $invalid
 	this.partialyData = function() {
 		tmp = this;
 		

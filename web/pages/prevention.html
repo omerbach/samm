@@ -1,0 +1,322 @@
+﻿<script type="text/ng-template" id="myCopyBuildingModalContent.html">
+        <div class="modal-header">
+            <h3 class="modal-title">שיכפול טיפול בין בניינים</h3>
+        </div>
+        <div dir="rtl" class="modal-body">
+
+			<span>מקור</span>
+			<select
+				dir="rtl"
+				style="width: 100%"
+				id="sourceBuildings"
+				ui-select2 = "{allowClear : true}"
+				ng-model='source_building'
+				data-placeholder='בחר בנין שישמש להעתקה '
+				name='source'
+				ng-options="sb as sb.building_name for sb in availablePreventions  | unique:'building_name'"">
+				<option></option>
+			</select>
+			<br/><br/>
+
+			<span>יעד</span>
+			<select
+				dir="rtl"
+				style="width: 100%"
+				id="targetBuildings"
+				ui-select2 = "{allowClear : true}"
+				ng-model='target_building'
+				data-placeholder='בחר בנין יעד '
+				name='target'
+				ng-options="tb as tb.name for tb in allBuildings">
+				<option></option>
+			</select>
+
+			<br/><br/>
+
+			<div collapse="!source_building">
+				<table style="border: 1px solid #CCC; width: 100%;" dir='rtl'>
+					<tr>
+						<th class="sam_th">תיאור</th>
+						<th class="sam_th">חודשים</th>
+						<th class="sam_th">קטגוריה</th>
+					</tr>
+
+					<tr ng-repeat="prev in availablePreventions" ng-if="source_building.building_id == prev.building_id" ng-class-odd="'odd'">
+						<td ng-class="{'line-through': !prev.copy_prevention_selected }" class="sam_td"><input style="margin-left: 3px;" ng-model="prev.copy_prevention_selected" ng-init="prev.copy_prevention_selected=true" type="checkbox">{{prev.description}}</td>
+						<td ng-class="{'line-through': !prev.copy_prevention_selected }" class="sam_td">{{prev.months}}</td>
+						<td ng-class="{'line-through': !prev.copy_prevention_selected }" class="sam_td">{{prev.category}}</td>
+					</tr>
+				</table>
+			</div-->
+
+			<br/>
+
+        </div>
+        <div dir="rtl" class="modal-footer">
+            <button class="btn btn-primary" ng-disabled = "!source_building || !target_building" ng-click="ok(target_building)">שכפל</button>
+			<button class="btn btn-danger" ng-click="cancel()">ביטול</button>
+        </div>
+
+</script>
+
+<script type="text/ng-template" id="myServicePreventionModalContent.html">
+        <div class="modal-header">
+            <h3 class="modal-title"> מחיקה</h3>
+        </div>
+        <div dir="rtl" style="text-align: right;" class="modal-body">
+			<div>המערכת איתרה קריאות שירות אשר מקושרות לטיפול תקופתי.</div>
+			<br/>
+			<div>אנא בחר התנהגות רצויה כתוצאה ממחיקת טיפול זה: </div>
+        </div>
+        <div dir="rtl" class="modal-footer">
+            <button class="btn btn-primary" ng-click="ok(0)">מחק טיפול זו בלבד</button>
+            <button class="btn btn-primary" ng-click="ok(1)">מחק את כל קריאות השירות המקושרות לטיפול זה </button>
+            <button class="btn btn-danger" ng-click="cancel()">ביטול</button>
+        </div>
+</script>
+
+<script type="text/ng-template" id="smart_checkbox_header.html">
+	<div  class="btn-group">
+		<button class="btn btn-default dropdown-toggle btn-xs" data-toggle="dropdown">
+			<i ng-click="prevention.masterCheckBoxClick($event)" ng-class="{'fa-square-o': prevention.masterCheckBoxState == 1, 'fa-minus-square-o': prevention.masterCheckBoxState == 2, 'fa-check-square-o': prevention.masterCheckBoxState == 3}" class="fa fa-lg"></i> <span class="caret"></span>						
+		</button>
+		<ul class="dropdown-menu">
+			<li>
+				<a href="javascript:void(0);" ng-click="prevention.selectAll()"><i class="fa fa-fire-extinguisher "></i>&nbsp;&nbsp;&nbsp;&nbsp;כולם</a>
+			</li>
+			<li>
+				<a href="javascript:void(0);" ng-click="prevention.clearSelections()"><i class="fa fa-fire-extinguisher disabled "></i>&nbsp;&nbsp;&nbsp;&nbsp;אף אחד</a>
+			</li>
+		</ul>
+	</div>
+</script>
+
+
+<div class="row">
+	<div class="col-lg-12">
+		<div class="panel panel-default">
+			<div dir="rtl" class="panel-heading">								
+
+				<a tooltip="טען נתונים שוב (טעינה מחדש תנקה את כל הבחירות שלכם)" href="javascript:void(0);" class="btn btn-default btn-lg" ng-click="prevention.GetPreventions()"><i ng-class="prevention.isLoading()" class="fa fa-refresh fa-lg"></i></a>
+				<a tooltip="הוסף קריאת שירות חדשה" href="javascript:void(0);" class="btn btn-default btn-lg" ng-click="prevention.showAddForm = !prevention.showAddForm; prevention.reset_session();"><i class="fa fa-plus-circle fa-lg"></i></a>
+				<a tooltip="שכפל טיפול" href="javascript:void(0);" class="btn btn-default btn-lg" ng-click="prevention.ClonePrevention();"><i class="fa fa-copy fa-lg"></i></a>
+				<a tooltip="פותח או סוגר את בקרת השליטה בעמודות להצגה בטבלה" href="javascript:void(0);" class="btn btn-default btn-lg" ng-click="prevention.showColumnPanel = !prevention.showColumnPanel"><i class="fa fa-list-ul fa-lg"></i></a>
+				
+				<div ng-show="prevention.total_preventions" tooltip="מגוון פעולות שניתן לבצע על הרשומות שבחרתם" class="btn-group">
+					<button class="btn btn-default dropdown-toggle btn-lg" data-toggle="dropdown">
+						<i class="fa fa-lg fa-fire-extinguisher"></i>
+						<span class="caret"></span>	
+						<span class="badge_success badge badge_header">{{prevention.total_preventions}}</span>
+					</button>
+					<ul class="dropdown-menu">
+						<li>
+							<a href="javascript:void(0);" ng-click="prevention.user.exportHtmlTableToPdf('prevention_table', 'lskd')"><i class="fa fa-file-pdf-o"></i>&nbsp;&nbsp;&nbsp;&nbsp;יצא לקובץ pdf</a>
+						</li>
+						<li>
+							<a href="javascript:void(0);" ng-click="prevention.deletePreventions()"><i class="fa fa-trash-o"></i>&nbsp;&nbsp;&nbsp;&nbsp;מחק </a>
+						</li>
+					</ul>
+				</div>
+			</div>						
+			
+						
+			<!-- /.panel-heading -->
+			<div class="panel-body">
+				<div dir="rtl" class="row">
+
+					<div ng-show="!prevention.showAddForm" class="col-md-4">
+						<input ng-class="{'filter_on': prevention.professionalData.name.length }" tooltip="משלים אוטומטית בעלי מקצוע ,לפנק, לפנק, לפנק" ng-change="prevention.AutoCompleteChange(prevention.professionalData)" typeahead-on-select="prevention.GetPreventions()" type="text" ng-model="prevention.professionalData" placeholder="התחל להקליד בעל מקצוע" typeahead="data as data.name for data in prevention.guessProfessional($viewValue)" typeahead-loading="loadingLocations" class="form-control">
+					</div>
+
+                    <div ng-show="!prevention.showAddForm" class="col-md-4">
+						<input ng-class="{'filter_on': prevention.categoryData.name.length }" tooltip="משלים אוטומטית קטגוריה ,לפנק, לפנק, לפנק" ng-change="prevention.AutoCompleteChange(prevention.categoryData)" typeahead-on-select="prevention.GetPreventions()" auto-focus type="text" ng-model="prevention.categoryData" placeholder="התחל להקליד קטגוריה" typeahead="data as data.name for data in prevention.guessCategory($viewValue)" typeahead-loading="loadingLocations" class="form-control">
+					</div>
+
+					<div ng-show="!prevention.showAddForm" class="col-md-4">
+						<input ng-class="{'filter_on': prevention.buildingData.name.length }" tooltip="משלים אוטומטית בניינים ,לפנק, לפנק, לפנק" ng-change="prevention.AutoCompleteChange(prevention.buildingData)" typeahead-on-select="prevention.GetPreventions()" auto-focus type="text" ng-model="prevention.buildingData" placeholder="התחל להקליד שם בנין" typeahead="data as data.name for data in prevention.guessBuildingName($viewValue)" typeahead-loading="loadingLocations" class="form-control">
+					</div>
+
+					<br/>
+					<br/>
+					<br/>
+					
+					<form collapse="!prevention.showAddForm" name="loginForm" novalidate>
+						<div ng-show="prevention.session.description.length" class="form-group main_title">
+							{{prevention.session.description}}
+						</div>
+												
+						<div class="form-group" ng-class="{'has-error': loginForm.description.$invalid}">
+                            <span dir="rtl" class="bold">תיאור</span>&nbsp;
+							<input id="input-status-prevention" class="form-control" name="description" type="text" placeholder="תיאור*" required ng-model="prevention.session.description" />
+						</div>
+
+                        <div class="form-group" ng-class="{'has-error': loginForm.months.$invalid}">
+                            <span dir="rtl" class="bold">חודשים</span>&nbsp;
+                            <table ng-class="{mandatory: !prevention.atLeastOneMonthChosen(prevention.session)}">
+                                <tr>
+                                    <th style="text-align: center;"><i class="fa fa-check"></i></th>
+                                    <th style="text-align: center;">1</th>
+                                    <th style="text-align: center;">2</th>
+                                    <th style="text-align: center;">3</th>
+                                    <th style="text-align: center;">4</th>
+                                    <th style="text-align: center;">5</th>
+                                    <th style="text-align: center;">6</th>
+                                    <th style="text-align: center;">7</th>
+                                    <th style="text-align: center;">8</th>
+                                    <th style="text-align: center;">9</th>
+                                    <th style="text-align: center;">10</th>
+                                    <th style="text-align: center;">11</th>
+                                    <th style="text-align: center;">12</th>
+                                </tr>
+                                <tr>
+                                    <td class="sam_td tenant_letter_checkbox"><input ng-change="prevention.updateAllMonths(prevention.session)" ng-model="prevention.session.all_months" type="checkbox"></td>
+                                    <td class="sam_td tenant_letter_checkbox"><input ng-model="prevention.session.january" type="checkbox"></td>
+                                    <td class="sam_td tenant_letter_checkbox"><input ng-model="prevention.session.february" type="checkbox"></td>
+                                    <td class="sam_td tenant_letter_checkbox"><input ng-model="prevention.session.march" type="checkbox"></td>
+                                    <td class="sam_td tenant_letter_checkbox"><input ng-model="prevention.session.april" type="checkbox"></td>
+                                    <td class="sam_td tenant_letter_checkbox"><input ng-model="prevention.session.may" type="checkbox"></td>
+                                    <td class="sam_td tenant_letter_checkbox"><input ng-model="prevention.session.june" type="checkbox"></td>
+                                    <td class="sam_td tenant_letter_checkbox"><input ng-model="prevention.session.july" type="checkbox"></td>
+                                    <td class="sam_td tenant_letter_checkbox"><input ng-model="prevention.session.august" type="checkbox"></td>
+                                    <td class="sam_td tenant_letter_checkbox"><input ng-model="prevention.session.september" type="checkbox"></td>
+                                    <td class="sam_td tenant_letter_checkbox"><input ng-model="prevention.session.october" type="checkbox"></td>
+                                    <td class="sam_td tenant_letter_checkbox"><input ng-model="prevention.session.november" type="checkbox"></td>
+                                    <td class="sam_td tenant_letter_checkbox"><input ng-model="prevention.session.december" type="checkbox"></td>
+                                </tr>
+                            </table>
+						</div>
+						
+						<div class="form-group">
+                            <span dir="rtl" class="bold">קטגוריה</span>
+							<input name="category" type="text" ng-model="prevention.session.category" placeholder="קטגוריה" typeahead="data.id as data.name for data in prevention.guessCategory($viewValue)" typeahead-loading="loadingLocations" class="form-control">
+						</div>
+						
+						<div class="form-group" required ng-class="{'has-error': loginForm.building.$invalid}">
+                            <span dir="rtl" class="bold">בנין</span>
+							<select
+                                ng-class="{mandatory: !prevention.session.building_id}"
+								dir="rtl"
+								style="width: 100%"
+								id="availableBuildings"
+								ui-select2 = "{allowClear : true}"
+								ng-model='prevention.session.building_id'
+								data-placeholder='בנין*'
+								name='building'
+								ng-change='prevention.UpdateBuildingTenants()'>								
+								<!-- http://stackoverflow.com/questions/25694021/two-way-databinding-in-select2-for-angularjs-doesnt-work-in-angular-1-2-13#25694274 -->								
+								<option value=""></option>
+								<option ng-repeat="building in prevention.availableBuildings" value="{{building.id}}">{{building.name}}</option>							   
+							</select>					
+						</div>
+						
+						<div class="form-group" ng-class="{'has-error': loginForm.professional.$invalid}">
+                            <span dir="rtl" class="bold">בעל מקצוע</span>
+							<select
+                                ng-class="{mandatory: !prevention.session.professional_id}"
+								dir="rtl"
+								style="width: 100%"
+								id="availableProfessionals"
+								ui-select2 = "{allowClear : true}"							
+								ng-model='prevention.session.professional_id'
+								data-placeholder='בעל מקצוע מטפל*'
+								name='professional'
+								ng-change='prevention.ProfessionalChanged()'>
+								<!-- http://stackoverflow.com/questions/25694021/two-way-databinding-in-select2-for-angularjs-doesnt-work-in-angular-1-2-13#25694274 -->								
+								<option value=""></option>
+								<option ng-repeat="professional in prevention.availableProfessionals" value="{{professional.professional_id}}">{{professional.name}} | {{professional.category}} | {{professional.phones}}</option>
+							</select>					
+						</div>
+						
+						<div class="form-group" ng-class="{'has-error': loginForm.worker.$invalid}">
+                            <span dir="rtl" class="bold">פותח קריאה</span>
+							<select
+								dir="rtl"
+								style="width: 100%"
+								id="availableWorkers"
+								ui-select2 = "{allowClear : true}"							
+								ng-model='prevention.session.worker_id'
+								data-placeholder='עובד יוזם'
+								name='worker'
+								ng-change='prevention.WorkerChanged()'>
+								<!-- http://stackoverflow.com/questions/25694021/two-way-databinding-in-select2-for-angularjs-doesnt-work-in-angular-1-2-13#25694274 -->								
+								<option value=""></option>
+								<option dir="rtl" ng-repeat="worker in prevention.availableWorkers" value="{{worker.worker_id}}">{{worker.name}} | {{worker.phones}}</option>
+							</select>					
+						</div>
+						
+						<div class="form-group" ng-class="{'has-error': loginForm.comment.$invalid}">
+                            <span dir="rtl" class="bold">הערה</span>
+							<input id="input-status-prevention" class="form-control" name="comment" type="text" placeholder="הכנס טקטס חופשי כאן: לדוגמא חומרים שצריך בעל המקצוע להשלמת הטיפול" ng-model="prevention.session.comment" />
+						</div>
+						
+						<div class="form-group" ng-class="{'has-error': loginForm.cost.$invalid}">
+                            <span dir="rtl" class="bold">עלות</span>
+							<input id="input-status-prevention" class="form-control" name="cost" type="text" placeholder="עלות" ng-model="prevention.session.cost" />
+						</div>
+
+						<div class="form-group">
+							<button ng-click="prevention.addNewPrevention()" type="submit" class="btn btn-primary" value="Login" title="Login" ng-disabled="prevention.partialyData()">
+								<span>סיים</span>
+							</button>
+							<button ng-click="prevention.reset_session();" class="btn btn-warning">
+								<span>נקה</span>
+							</button>
+							<button ng-click="prevention.showAddForm = false; prevention.reset_session();" class="btn btn-danger">
+								<span>בטל</span>
+							</button>							
+						</div>						
+					</form>
+				</div>
+				
+				<div id="filter_checkbox_headers" collapse="!prevention.showColumnPanel">
+					<span style="margin-right: 10px; font-weight: bold;">הצג\הסתר עמודות:</span>
+					<input class="sam_column_checkbox" ng-model="prevention.column_building" type="checkbox"/>בנין |
+					<input class="sam_column_checkbox" ng-model="prevention.column_description" type="checkbox"/>תיאור |
+					<input class="sam_column_checkbox" ng-model="prevention.column_months" type="checkbox"/>חודשים |
+					<input class="sam_column_checkbox" ng-model="prevention.column_category" type="checkbox"/>קטגוריה |
+					<input class="sam_column_checkbox" ng-model="prevention.column_worker" type="checkbox"/>עובד חברה |
+					<input class="sam_column_checkbox" ng-model="prevention.column_professional" type="checkbox"/>בעל מקצוע |
+					<input class="sam_column_checkbox" ng-model="prevention.column_comment" type="checkbox"/>הערה |
+					<input class="sam_column_checkbox" ng-model="prevention.column_cost" type="checkbox"/>עלות
+				</div>
+				
+				<table id="prevention_table" dir='rtl' ng-table="prevention.tableParams">
+					<tr ng-repeat="row in prevention.availablePreventions track by row.prevention_id" ng-class-odd="'odd'" ng-class="{modified: row.prevention_selected}">
+						<td header="'smart_checkbox_header.html'" class="sam_td prevention_checkbox">
+							<input ng-model="row.prevention_selected" class="checkBoxAlerts" type="checkbox"/>
+						</td>
+						<td ng-show="prevention.column_building" data-title="'בנין'" sortable="'building_name'" class="bold sam_td">{{row.building_name}}</td>
+						<td ng-show="prevention.column_description" data-title="'תיאור'" sortable="'description'" class="sam_td prevention_description">{{row.description}}</td>
+						<td ng-show="prevention.column_months" data-title="'חודשים'" sortable="'months'" class="sam_td">{{row.months}}</td>
+						<td ng-show="prevention.column_category" data-title="'קטגוריה'" sortable="'category'" class="sam_td">{{row.category}}</td>
+						<td ng-show="prevention.column_worker" data-title="'פותח קריאה'" sortable="'worker_name'" class="sam_td">{{row.worker_name}}</td>
+						<td ng-show="prevention.column_professional" data-title="'בעל מקצוע'" sortable="'professional_name'" class="sam_td">{{row.professional_name}}</td>
+						<td ng-show="prevention.column_comment" data-title="'הערה'" sortable="'comment'" class="cost_comment sam_td">{{row.comment}}</td>
+						<td ng-show="prevention.column_cost" data-title="'עלות'" sortable="'cost'" class="sam_td">{{row.cost | number}} ₪</td>
+						
+						
+						<td class="sam_td buttons_td">
+							<button tooltip="ערוך טיפול" ng-click="prevention.editPrevention(row)">
+								<i  class="fa-pencil-square-o fa fa-xs"></i>
+							</button>
+
+							<button tooltip="מחק טיפול" ng-click="prevention.deletePreventions(row)">
+								<i class="fa fa-trash-o fa-xs sam_red"></i>
+							</button>
+							<span ng-show="row.linked_services" class="badge badge_success">{{row.linked_services}}</span>
+						</td>				
+					</tr>				
+					 
+				</table>
+				
+				<button ng-show="prevention.maximum_records > prevention.availablePreventions.length" style="width: 100%;" ng-click="prevention.limit = prevention.limit  + 25; prevention.GetPreventions(0, '', '', '', '', true);">
+					הצג עוד תוצאות
+					<span ng-show="prevention.isLoading()"><i class="fa fa-spin fa-spinner"></i></span>
+				</button>				
+				
+			</div>
+			<!-- /.panel-body -->
+		</div>
+		<!-- /.panel -->
+	</div>
+</div>

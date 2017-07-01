@@ -538,8 +538,6 @@ def fetchMultiTypeElements():
 @bottle.route('/fetchProfessionals')
 def fetchProfessionals():
 
-    start_date = bottle.request.query.start_date
-    end_date = bottle.request.query.end_date    
     lastUpdatedProfessional = bottle.request.query.updated_professional if len(bottle.request.query.updated_professional) else 0
 
     info_db = sqlite3.connect(utils.DB_INFO)
@@ -672,6 +670,152 @@ def fetchWorkers():
                   wComment in cursor}        
 
     return json.dumps({'workers': workerOf})
+
+@bottle.post('/deletePreventions')
+def deletePreventions():
+    f = bottle.request.forms
+    prevention_ids = json.loads(f.prevention_ids)
+    delete_status = int(f.delete_status)
+
+    info_db = sqlite3.connect(utils.DB_INFO)
+    with info_db as connection:
+        cursor = connection.cursor()
+
+        cursor.execute('''
+        DELETE FROM prevention where prevention_id in (%s)
+        ''' % ','.join(str(b) for b in prevention_ids ) )
+
+    # delete service requests from the same prevention id
+    if delete_status:
+        with info_db as connection:
+            cursor = connection.cursor()
+
+            cursor.execute('''
+                    DELETE FROM service where prevention_id in (%s)
+                    ''' % ','.join(str(b) for b in prevention_ids))
+
+#gets service requests info from the database
+@bottle.route('/fetchPreventions')
+def fetchPreventions():
+
+    building_id = bottle.request.query.building_id
+    professional_id = bottle.request.query.professional_id
+
+    lastUpdatedPrevention = bottle.request.query.updated_prevention_id if len(bottle.request.query.updated_prevention_id) else 0
+
+    limit = bottle.request.query.limit
+
+    if len(limit):
+        limit = int(limit)
+    else:
+        limit = 0
+
+    info_db = sqlite3.connect(utils.DB_INFO)
+
+    cursor = info_db.cursor()
+
+    # https://stackoverflow.com/questions/25469981/python-sqlite3-build-where-part-with-dynamic-placeholders
+    # dirty and ugly hack
+    parameters, query_ext = [-1], []
+
+    query = '''         
+        SELECT 
+        r.prevention_id, 
+        r.building_id, 
+        r.description, 
+        r.category, 
+        r.worker_id, 
+        r.professional_id, 
+        r.months, 
+        r.cost, 
+        r.comment,
+        b.name as building_name,
+        w.name as worker_name,
+        p.name as professional_name,
+        (SELECT count(*) FROM service as q WHERE q.prevention_id = r.prevention_id) AS linked_services
+        FROM prevention as r
+        LEFT JOIN buildings as b ON r.building_id = b.building_id
+        LEFT JOIN workers as w ON r.worker_id = w.worker_id
+        LEFT JOIN professionals as p ON r.professional_id = p.professional_id
+        WHERE prevention_id > ?
+        '''
+
+    if len(building_id):
+        query_ext.append('r.building_id = ?')
+        #query_ext += " AND p.building_id = ?"
+        parameters += [building_id]
+
+    if len(professional_id):
+        query_ext.append('r.professional_id = ?')
+        #query_ext += " AND p.professional_id = ?"
+        parameters += [professional_id]
+
+    extra = ' AND '.join(query_ext)
+    if len(extra):
+        extra = ' AND ' + extra
+
+    extra += " ORDER BY r.description ASC"
+
+    cursor.execute('SELECT COUNT(*) FROM prevention as r WHERE prevention_id > ? %s' % extra, parameters)
+    res = cursor.fetchone()
+    if res:
+        maximum_records, = res
+    else:
+        maximum_records = 0
+
+    #now for the main query
+    if limit:
+        #query_ext += " LIMIT %d" % limit
+        extra += " LIMIT %d" % limit
+
+    query += extra
+    cursor.execute(query, parameters)
+
+
+    preventionOf =  { pId: {
+        'prevention_id': pId,
+        'building_id': pBuildingId,
+        'description': pDescription,
+        'category': pCategory,
+        'worker_id': pWorkerId,
+        'professional_id': pProfessionalId,
+        'months': months,
+        'cost': cost,
+        'comment': pComment,
+        'prevention_selected': int(lastUpdatedPrevention) == int(pId),
+        'january': '1' in months.split(','),
+        'february': '2' in months.split(','),
+        'march': '3' in months.split(','),
+        'april': '4' in months.split(','),
+        'may': '5' in months.split(','),
+        'june': '6' in months.split(','),
+        'july': '7' in months.split(','),
+        'august': '8' in months.split(','),
+        'september': '9' in months.split(','),
+        'october': '10' in months.split(','),
+        'november': '11' in months.split(','),
+        'december': '12' in months.split(','),
+        'building_name': building_name,
+        'worker_name': worker_name,
+        'professional_name': professional_name,
+        'linked_services': linked_services
+        } for
+                   pId,
+                   pBuildingId,
+                   pDescription,
+                   pCategory,
+                   pWorkerId,
+                   pProfessionalId,
+                   months,
+                   cost,
+                   pComment,
+                   building_name,
+                   worker_name,
+                   professional_name,
+                   linked_services in cursor}
+
+    return {'preventions': preventionOf, 'maximum_records': maximum_records}
+
 
 @bottle.post('/copyPayment') 
 def copyPayment():
@@ -1142,7 +1286,7 @@ def fetchServiceRequests():
     tenant_id = bottle.request.query.tenant_id
     professional_id = bottle.request.query.professional_id    
     status = bottle.request.query.status
-    print 'status: ', status
+    service_type = bottle.request.query.service_type
 
     start_date = bottle.request.query.start_date
     end_date = bottle.request.query.end_date  
@@ -1168,6 +1312,7 @@ def fetchServiceRequests():
         s.tenant_id, 
         s.worker_id, 
         s.professional_id, 
+        s.prevention_id,
         s.status, 
         s.start_date, 
         s.end_date, 
@@ -1189,11 +1334,21 @@ def fetchServiceRequests():
     query_ext = ''
 
     if len(status) and int(status):
-        statuses = utils.DecimalBreakDown(status)              
-        question_marks = ['?' for s in statuses]
-        query_ext += " AND s.status in (%s)" % ','.join(question_marks)
-        for st in statuses:
-            parameters += [st]        
+        if int(status) == 4:
+            parameters[1] = datetime.datetime.now() + datetime.timedelta(days=14)
+            status = 3
+            statuses = utils.DecimalBreakDown(status)
+            question_marks = ['?' for s in statuses]
+            query_ext += " AND s.status in (%s)" % ','.join(question_marks)
+            for st in statuses:
+                parameters += [st]
+
+    if len(service_type) and int(service_type):
+        if int(service_type) == 1:
+            query_ext += " AND s.prevention_id = 0"
+
+        if int(service_type) == 2:
+            query_ext += " AND s.prevention_id > 0"
 
     if len(building_id):
         query_ext += " AND s.building_id = ?"
@@ -1240,6 +1395,7 @@ def fetchServiceRequests():
         'tenant_id': sTenantId,
         'worker_id': sWorkerId,
         'professional_id': sProfessionalId,
+        'prevention_id': sPrevention_id,
         'status': sStatus,
         'start_date': sStartDate,
         'end_date': sEndDate,
@@ -1247,6 +1403,7 @@ def fetchServiceRequests():
         'comment': sComment,
         'reminders': sReminders,
         'service_selected': int(lastUpdatedServiceRequest) == int(sId),
+        'must_attend': dates.date(sStartDate) < (datetime.datetime.now() + datetime.timedelta(days=6)).date() and (int(sStatus) == 1 or int(sStatus) == 2),
         'building_name': building_name,
         'tenant_name': tenant_name,
         'worker_name': worker_name,
@@ -1258,7 +1415,8 @@ def fetchServiceRequests():
                    sBuildingId, 
                    sTenantId, 
                    sWorkerId, 
-                   sProfessionalId, 
+                   sProfessionalId,
+                   sPrevention_id,
                    sStatus,
                    sStartDate,
                    sEndDate,                   
@@ -1793,18 +1951,32 @@ def sendGroupMail():
 def main():    
     return bottle.static_file('index.html', '.')
 
-@bottle.post('/deleteServiceRequests') 
+@bottle.post('/deleteServiceRequests')
 def deleteServiceRequests():
+
     f = bottle.request.forms    
     service_ids = json.loads(f.service_ids)
+    prevention_ids = json.loads(f.prevention_ids)
+    delete_status = int(f.delete_status)
 
     info_db = sqlite3.connect(utils.DB_INFO)
+
+    # delete service requests
     with info_db as connection:
-        cursor=connection.cursor()        
+        cursor = connection.cursor()
 
         cursor.execute('''
         DELETE FROM service where service_id in (%s)
-        ''' % ','.join(str(b) for b in service_ids ) )    
+        ''' % ','.join(str(b) for b in service_ids))
+
+    # delete service requests from the same prevention id
+    if delete_status:
+        with info_db as connection:
+            cursor = connection.cursor()
+
+            cursor.execute('''
+                DELETE FROM service where prevention_id in (%s)
+                ''' % ','.join(str(b) for b in prevention_ids))
 
 @bottle.post('/sendServiceReminders') 
 def sendServiceReminders():
@@ -1945,7 +2117,7 @@ def addNewProfessional():
 @bottle.post('/addNewServiceRequest') 
 def addNewServiceRequest():
     f = bottle.request.forms    
-    service_request_details = json.loads(f.service_request)        
+    service_request_details = json.loads(f.service_request)
 
     building_id = 0 if service_request_details.get("building_id", "") == "" else service_request_details["building_id"]
     tenant_id = 0 if service_request_details.get("tenant_id", "") == "" else service_request_details["tenant_id"]
@@ -1953,9 +2125,7 @@ def addNewServiceRequest():
     professional_id = 0 if service_request_details.get("professional_id", "") == "" else service_request_details["professional_id"]
     cost = 0 if service_request_details.get("cost", "") == "" else service_request_details["cost"]
 
-
-    service_request_details.get("building_id", "")
-    info_db = sqlite3.connect(utils.DB_INFO)    
+    info_db = sqlite3.connect(utils.DB_INFO)
     with info_db as connection:
         cursor=connection.cursor() 
 
@@ -1998,6 +2168,175 @@ def addNewServiceRequest():
             service_request_id = cursor.lastrowid
 
     return {'service_request_id': service_request_id}
+
+def bulkServiceRequests(service_request_details, service_dates):
+    service_requests = []
+    description = 0 if service_request_details.get("description", "") == "" else service_request_details["description"]
+    category = 0 if service_request_details.get("category", "") == "" else service_request_details["category"]
+    building_id = 0 if service_request_details.get("building_id", "") == "" else service_request_details["building_id"]
+    tenant_id = 0 if service_request_details.get("tenant_id", "") == "" else service_request_details["tenant_id"]
+    worker_id = 0 if service_request_details.get("worker_id", "") == "" else service_request_details["worker_id"]
+    professional_id = 0 if service_request_details.get("professional_id", "") == "" else service_request_details[
+        "professional_id"]
+    prevention_id = 0 if service_request_details.get("prevention_id", "") == "" else service_request_details[
+        "prevention_id"]
+    cost = 0 if service_request_details.get("cost", "") == "" else service_request_details["cost"]
+    comment = 0 if service_request_details.get("comment", "") == "" else service_request_details["comment"]
+
+    # insert new ones
+    for d in service_dates:
+        service_requests.append((
+            description,
+            category,
+            building_id,
+            tenant_id,
+            worker_id,
+            professional_id,
+            prevention_id,
+            cost,
+            comment,
+            d
+        ))
+
+    info_db = sqlite3.connect(utils.DB_INFO)
+    with info_db as connection:
+        cursor = connection.cursor()
+
+        print prevention_id
+
+        #first delete all the future ones
+        cursor.execute('''
+        DELETE FROM service where prevention_id = ? AND DATE(start_date) > ?
+        ''', (prevention_id, datetime.datetime.now().date()))
+
+        # insert new ones
+        cursor.executemany('''
+                    INSERT INTO service (description, category, building_id, tenant_id, worker_id, professional_id, prevention_id, cost, comment, start_date) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ''', service_requests)
+
+    return {'service_request_id': 3}
+
+@bottle.post('/bulkPreventions')
+def bulkPreventions():
+    f = bottle.request.forms
+    preventions = json.loads(f.preventions)
+
+    db_preventions = []
+    target_building = f.target_building
+
+    for p in preventions:
+        db_preventions.append((
+            p["description"],
+            p["category"],
+            target_building,
+            p["worker_id"],
+            p["professional_id"],
+            p["months"],
+            p["cost"],
+            p["comment"]
+        ))
+
+    info_db = sqlite3.connect(utils.DB_INFO)
+    with info_db as connection:
+        cursor = connection.cursor()
+        cursor.executemany('''
+            INSERT INTO prevention (description, category, building_id, worker_id, professional_id, months, cost, comment) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', db_preventions)
+
+
+@bottle.post('/addNewPrevention')
+def addNewPrevention():
+    f = bottle.request.forms
+    prevention_details = json.loads(f.prevention)
+
+    building_id = 0 if prevention_details.get("building_id", "") == "" else prevention_details["building_id"]
+    worker_id = 0 if prevention_details.get("worker_id", "") == "" else prevention_details["worker_id"]
+    professional_id = 0 if prevention_details.get("professional_id", "") == "" else prevention_details["professional_id"]
+    cost = 0 if prevention_details.get("cost", "") == "" else prevention_details["cost"]
+
+    months_list = []
+    if prevention_details["january"]:
+        months_list.append('1')
+    if prevention_details["february"]:
+        months_list.append('2')
+    if prevention_details["march"]:
+        months_list.append('3')
+    if prevention_details["april"]:
+        months_list.append('4')
+    if prevention_details["may"]:
+        months_list.append('5')
+    if prevention_details["june"]:
+        months_list.append('6')
+    if prevention_details["july"]:
+        months_list.append('7')
+    if prevention_details["august"]:
+        months_list.append('8')
+    if prevention_details["september"]:
+        months_list.append('9')
+    if prevention_details["october"]:
+        months_list.append('10')
+    if prevention_details["november"]:
+        months_list.append('11')
+    if prevention_details["december"]:
+        months_list.append('12')
+
+    months = ",".join(months_list)
+
+    info_db = sqlite3.connect(utils.DB_INFO)
+    with info_db as connection:
+        cursor = connection.cursor()
+
+        #edit mode
+        if prevention_details.get("edit", False):
+            cursor.execute('''
+            UPDATE prevention 
+            SET description = ?, category = ?, building_id = ?, worker_id = ?, professional_id = ?, months = ?, cost = ?, comment = ?
+            WHERE prevention_id = ?
+            ''', (prevention_details.get("description", ""),
+                  prevention_details.get("category", ""),
+                  building_id,
+                  worker_id,
+                  professional_id,
+                  months,
+                  prevention_details.get("cost", ""),
+                  prevention_details.get("comment", ""),
+                  prevention_details.get("prevention_id", "") ) )
+
+            prevention_id = prevention_details.get("prevention_id", "")
+
+        else:
+
+            cursor.execute('''
+            INSERT INTO prevention (description, category, building_id, worker_id, professional_id, months, cost, comment) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (prevention_details.get("description", ""),
+                  prevention_details.get("category", ""),
+                  prevention_details.get("building_id", ""),
+                  prevention_details.get("worker_id", ""),
+                  prevention_details.get("professional_id", ""),
+                  months,
+                  prevention_details.get("cost", ""),
+                  prevention_details.get("comment", "")
+                  ))
+
+
+            prevention_id = cursor.lastrowid
+
+    current_year = datetime.datetime.now().year
+    # create service requests for five years in the future
+    toOpen = [
+        datetime.datetime.strptime('%s-%s 08:00:00' % (current_year + i, m), '%Y-%m %H:%M:%S') for m in months_list
+        for i in range(6)
+        if datetime.datetime.now() < datetime.datetime.strptime('%s-%s 08:00:00' % (current_year + i, m),
+                                                                '%Y-%m %H:%M:%S')
+    ]
+
+    prevention_details["prevention_id"] = prevention_id
+    bulkServiceRequests(prevention_details, toOpen)
+
+    return {'prevention_id': prevention_id}
 
 @bottle.post('/addNewWorker') 
 def addNewWorker():
@@ -2372,7 +2711,7 @@ def sendTemplateAlert():
         sendAlert(fileContent, metaData, alertsTypeOf[alert], destination, dest["building"], dest["name"], recepient_type, source)
 
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
 
     #enabling bottle to receive large messages
     #http://stackoverflow.com/questions/16865997/python-bottle-module-causes-error-413-request-entity-too-large

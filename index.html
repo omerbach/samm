@@ -90,8 +90,12 @@
                         </li> 
 
 						<li ng-class="{active: isActive('/service')}">
-                            <a href="#service"><i class="fa fa-wrench fa-fw"></i> קריאות שירות</a>
-                        </li>	
+                            <a href="#service"><i class="fa fa-wrench fa-fw"></i> אחזקה שוטפת</a>
+                        </li>
+
+						<li ng-class="{active: isActive('/prevention')}">
+                            <a href="#prevention"><i class="fa fa-fire-extinguisher fa-fw"></i> אחזקה מונעת</a>
+                        </li>
 						
 						<li ng-class="{active: isActive('/professionals')}">
                             <a href="#professionals"><i class="fa fa-suitcase fa-fw"></i> אנשי מקצוע</a>
@@ -137,11 +141,7 @@
             <div id="sam-view" dir="rtl" ng-view></div>            						                        
         </div>                
     </div>
-    
-	
-	<!--WEBSCOPE-->
-	<script src="http://app.webscopeapp.com/external.bundle.js" async data-webscope-id="592dec7f-b293-4b33-a4ef-e4d1c2c2ec33"></script>
-	<!--WEBSCOPE-->
+
     <!-- Core Scripts - Include with every page -->
     <script src="js/jquery-1.10.2.js"></script>	
     <script src="js/bootstrap.min.js"></script>
@@ -157,13 +157,19 @@
 	
 	<!--script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.13/angular.js"></script-->
     <!--script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.13/angular-route.js"></script-->	
+
 	<script type="text/javascript" src="angularjs/1.2.13/angular.js"></script>
-    <script type="text/javascript" src="angularjs/1.2.13/angular-route.js"></script>	
-    <!--script type="text/javascript" src="https://rawgithub.com/angular-ui/ng-grid/2.0.8/build/ng-grid.js"></script-->
-	<script type="text/javascript" src="angular-ui/ng-grid/2.0.8/build/ng-grid.js"></script>
+    <script type="text/javascript" src="angularjs/1.2.13/angular-route.js"></script>
+
+
+
+	<!--script type="text/javascript" src="https://rawgithub.com/angular-ui/ng-grid/2.0.8/build/ng-grid.js"></script-->
+	<!--script type="text/javascript" src="angular-ui/ng-grid/2.0.8/build/ng-grid.js"></script-->
     <!--script type="text/javascript" src="https://rawgithub.com/angular-ui/ng-grid/2.0.8/plugins/ng-grid-layout.js"></script-->
-	<script data-require="ng-table@*" data-semver="0.3.0" src="http://bazalt-cms.com/assets/ng-table/0.3.0/ng-table.js"></script>
+	<!--script data-require="ng-table@*" data-semver="0.3.0" src="http://bazalt-cms.com/assets/ng-table/0.3.0/ng-table.js"></script-->
 	<script type="text/javascript" src="http://cdn.jsdelivr.net/angular.ngtable/0.3.3/ng-table.js"></script>
+
+
 	    
 	<script src="http://tinymce.cachefly.net/4.1/tinymce.min.js"></script>
 	<script src="web/js/tinyMCE/hebrewSupport/he_IL.js"></script>
@@ -181,6 +187,7 @@
 	<script type="text/javascript" src="web/controllers/professionals.js"></script>
 	<script type="text/javascript" src="web/controllers/dashboard.js"></script>
 	<script type="text/javascript" src="web/controllers/service.js"></script>
+    <script type="text/javascript" src="web/controllers/prevention.js"></script>
 	<script type="text/javascript" src="web/controllers/workers.js"></script>
 	<script type="text/javascript" src="web/controllers/settings.js"></script>
 	<script type="text/javascript" src="web/controllers/templates.js"></script>
@@ -196,7 +203,7 @@
 	
 	<!-- http://stackoverflow.com/questions/23396398/ng-grid-auto-dynamic-height -->
 	<script type="text/javascript" src="web/js/ngFlexibleGrid.js"></script>
-	<script type="text/javascript" src="web/js/ngAutoRowHeightGrid.js"></script>
+	<!--script type="text/javascript" src="web/js/ngAutoRowHeightGrid.js"></script-->
 	<script type="text/javascript" src="web/js/ui-bootstrap-tpls-0.11.0.min.js"></script>	
 	<!-- http://tarruda.github.io/bootstrap-datetimepicker/ -->
 	<script type="text/javascript" src="bootstrap-datetimepicker-0.0.11/js/bootstrap-datetimepicker.min.js"></script>		

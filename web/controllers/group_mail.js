@@ -135,9 +135,9 @@
 	  })
 		.success(function(result){			
 			tmp.uploaded_folder = result.folder;
-			angular.forEach(result.files, function(f, index){
+				angular.forEach(result.files, function(f, index){
 				tmp.uploaded.push(f);
-			});	
+			});
 		});
 	};
 	

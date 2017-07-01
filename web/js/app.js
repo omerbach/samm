@@ -1,5 +1,5 @@
 ﻿(function(){	
-	var app = angular.module('sam', ['ngRoute', 'ngGrid', 'ui.bootstrap', 'ui', 'ngTable', 'ui.tinymce', 'xeditable', 'checklist-model']);
+	var app = angular.module('sam', ['ngRoute', 'ui.bootstrap', 'ui', 'ngTable', 'ui.tinymce', 'xeditable']);
 	
 	//http://stackoverflow.com/questions/17470790/how-to-use-a-keypress-event-in-angularjs
 	app.directive('obEnter', function () {
@@ -188,6 +188,12 @@
 				templateUrl : 'web/pages/service.html',
 				controller  : 'serviceController',
 				controllerAs : 'service'
+			})
+
+			.when('/prevention', {
+				templateUrl : 'web/pages/prevention.html',
+				controller  : 'preventionController',
+				controllerAs : 'prevention'
 			})
 						
 			.when('/workers', {

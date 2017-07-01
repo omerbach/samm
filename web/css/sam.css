@@ -69,7 +69,7 @@ background-clip: padding-box;
 
 body{
   font-family: "Alef Hebrew",
-               “Helvetica Neue”,
+               ï¿½Helvetica Neueï¿½,
                Helvetica,
                Arial,
                sans-serif !important;
@@ -238,8 +238,16 @@ background-position: -313px -119px;
 	background-color: #A3CAE4 !important;	
 }
 
+.must {
+	background-color: #ffc107 !important;
+}
+
 .data_required{
 	background-color: #E97A7E !important;
+}
+
+.line-through{
+    text-decoration: line-through !important;
 }
 
 

@@ -477,17 +477,7 @@ def PrepareDataBases():
         
     with info_db as connection:
         cursor = connection.cursor()
-        
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS buildings (
-         building_id INTEGER PRIMARY KEY,
-         name TEXT NOT NULL,
-         nick_name TEXT DEFAULT NULL,
-         updated DATETIME DEFAULT (datetime('now','localtime')),
-         based_on_file TEXT NOT NULL
-        )''')
-        
-        
+
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS alerts (
          alert_id INTEGER PRIMARY KEY,
@@ -501,51 +491,49 @@ def PrepareDataBases():
          source TEXT NOT NULL, -- phone, mail or empty string in a case of a letter
          updated DATETIME DEFAULT (datetime('now','localtime')),
          external_folder TEXT DEFAULT NULL
-        )''') 
-        
+        )''')
+
         cursor.execute('''
-        CREATE TABLE IF NOT EXISTS professionals (
-         professional_id INTEGER PRIMARY KEY,
+        CREATE TABLE IF NOT EXISTS buildings (
+         building_id INTEGER PRIMARY KEY,
          name TEXT NOT NULL,
-         fax TEXT DEFAULT NULL,
-         category TEXT DEFAULT NULL,
-         address TEXT DEFAULT NULL,
-         phones TEXT DEFAULT NULL, -- comma speperated
-         mails TEXT DEFAULT NULL, -- comma speperated
-         company_person_id TEXT DEFAULT NULL,
-         comment TEXT DEFAULT NULL 
-         )''')    
-        
+         nick_name TEXT DEFAULT NULL,
+         updated DATETIME DEFAULT (datetime('now','localtime')),
+         based_on_file TEXT NOT NULL
+        )''')
+
         cursor.execute('''
-        CREATE TABLE IF NOT EXISTS workers (
-         worker_id INTEGER PRIMARY KEY,
-         name TEXT NOT NULL,         
-         fax TEXT DEFAULT NULL,
-         title TEXT DEFAULT NULL,
-         address TEXT DEFAULT NULL,
-         phones TEXT DEFAULT NULL, -- comma speperated
-         mails TEXT DEFAULT NULL, -- comma speperated
-         person_id TEXT DEFAULT NULL,
-         comment TEXT DEFAULT NULL         
-         )''')  
-        
+        CREATE TABLE IF NOT EXISTS debts (
+         building_id INTEGER NOT NULL,
+         apartment_number TEXT NOT NULL,
+         debt_date DATE NOT NULL,
+         amount INTEGER DEFAULT 0,
+         expected INTEGER DEFAULT 0,
+         debt_type INTEGER DEFAULT 1, -- 0 unknown, 1 ongoing, 2 special
+         description TEXT DEFAULT NULL -- relevant for special debt cases                  
+        )''')
+
         cursor.execute('''
-        CREATE TABLE IF NOT EXISTS service (
-         service_id INTEGER PRIMARY KEY,
-         description TEXT NOT NULL,         
-         category TEXT DEFAULT NULL,
-         building_id INTEGER DEFAULT NULL,
-         tenant_id INTEGER DEFAULT NULL,
-         worker_id INTEGER DEFAULT NULL,
-         professional_id INTEGER DEFAULT NULL,
-         status INTEGER DEFAULT 1, -- 1 new, 2 in_progress, 3 done
-         start_date DATETIME DEFAULT (datetime('now','localtime')),
-         end_date DATETIME DEFAULT NULL,
-         cost INTEGER DEFAULT 0,
-         comment TEXT DEFAULT NULL,
-         reminders INTEGER DEFAULT 0
-         )''')        
-        
+        CREATE TABLE IF NOT EXISTS fields (
+         field_id INTEGER PRIMARY KEY,
+         excel_header TEXT NOT NULL,    
+         field_type INTEGER DEFAULT 1, -- 1 general, 2 debt
+         template_name TEXT DEFAULT NULL,
+         comment TEXT DEFAULT NULL        
+         )''')
+
+        declareColumns = []
+        cursor.execute('''SELECT template_name, field_type from fields''')
+        for template_name, field_type in cursor.fetchall():
+            declareColumns.append(',%s %s DEFAULT NULL' % (template_name, {1: 'TEXT', 2: 'INTEGER'}[field_type]))
+
+        cursor.execute('''DROP TABLE IF EXISTS dynamic_extra_tenant_data''')
+        cursor.execute('''
+        CREATE TABLE dynamic_extra_tenant_data (
+        tenant_id INTEGER NOT NULL        
+        %s        
+        )''' % ''.join(declareColumns))
+
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS payments (
          payment_id INTEGER PRIMARY KEY,
@@ -567,7 +555,58 @@ def PrepareDataBases():
          deposit_date DATE DEFAULT NULL,         
          comment TEXT DEFAULT NULL,
          external_folder TEXT DEFAULT NULL
-         )''')                
+         )''')
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS prevention (
+         prevention_id INTEGER PRIMARY KEY,
+         building_id INTEGER NOT NULL,
+         description TEXT NOT NULL,         
+         category TEXT DEFAULT NULL,
+         worker_id INTEGER DEFAULT NULL,
+         professional_id INTEGER DEFAULT NULL,
+         months TEXT NOT NULL, -- comma separated 1,2,3-12,
+         cost INTEGER DEFAULT 0,
+         comment TEXT DEFAULT NULL
+         )''')
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS professionals (
+         professional_id INTEGER PRIMARY KEY,
+         name TEXT NOT NULL,
+         fax TEXT DEFAULT NULL,
+         category TEXT DEFAULT NULL,
+         address TEXT DEFAULT NULL,
+         phones TEXT DEFAULT NULL, -- comma separated
+         mails TEXT DEFAULT NULL, -- comma separated
+         company_person_id TEXT DEFAULT NULL,
+         comment TEXT DEFAULT NULL 
+         )''')
+        
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS service (
+         service_id INTEGER PRIMARY KEY,
+         description TEXT NOT NULL,         
+         category TEXT DEFAULT NULL,
+         building_id INTEGER DEFAULT NULL,
+         tenant_id INTEGER DEFAULT NULL,
+         worker_id INTEGER DEFAULT NULL,
+         professional_id INTEGER DEFAULT NULL,
+         status INTEGER DEFAULT 1, -- 1 new, 2 in_progress, 3 done
+         start_date DATETIME DEFAULT (datetime('now','localtime')),
+         end_date DATETIME DEFAULT NULL,
+         cost INTEGER DEFAULT 0,
+         comment TEXT DEFAULT NULL,
+         reminders INTEGER DEFAULT 0
+         )''')
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS templates (
+         template_id INTEGER PRIMARY KEY,
+         template_name TEXT DEFAULT NULL,
+         updated DATETIME DEFAULT (datetime('now','localtime')),         
+         comment TEXT DEFAULT NULL        
+         )''')
 
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS tenants (
@@ -578,55 +617,24 @@ def PrepareDataBases():
          defacto INTEGER DEFAULT 1, -- 0 false, 1 true
          focal_point INTEGER DEFAULT 0, -- 0 false, 1 true
          name TEXT NOT NULL,
-         phones TEXT DEFAULT NULL, -- comma speperated
-         mails TEXT DEFAULT NULL -- comma speperated
+         phones TEXT DEFAULT NULL, -- comma separated
+         mails TEXT DEFAULT NULL -- comma separated
         )''')
-        
-        
-        #drop this table when building from scratch each time
-        #cursor.execute("DROP TABLE IF EXISTS debts")
-                
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS debts (
-         building_id INTEGER NOT NULL,
-         apartment_number TEXT NOT NULL,
-         debt_date DATE NOT NULL,
-         amount INTEGER DEFAULT 0,
-         expected INTEGER DEFAULT 0,
-         debt_type INTEGER DEFAULT 1, -- 0 unknown, 1 ongoing, 2 special
-         description TEXT DEFAULT NULL -- relevant for special debt cases                  
-        )''')        
-        
-        
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS templates (
-         template_id INTEGER PRIMARY KEY,
-         template_name TEXT DEFAULT NULL,
-         updated DATETIME DEFAULT (datetime('now','localtime')),         
-         comment TEXT DEFAULT NULL        
-         )''')        
 
         cursor.execute('''
-        CREATE TABLE IF NOT EXISTS fields (
-         field_id INTEGER PRIMARY KEY,
-         excel_header TEXT NOT NULL,    
-         field_type INTEGER DEFAULT 1, -- 1 general, 2 debt
-         template_name TEXT DEFAULT NULL,
-         comment TEXT DEFAULT NULL        
+        CREATE TABLE IF NOT EXISTS workers (
+         worker_id INTEGER PRIMARY KEY,
+         name TEXT NOT NULL,         
+         fax TEXT DEFAULT NULL,
+         title TEXT DEFAULT NULL,
+         address TEXT DEFAULT NULL,
+         phones TEXT DEFAULT NULL, -- comma separated
+         mails TEXT DEFAULT NULL, -- comma separated
+         person_id TEXT DEFAULT NULL,
+         comment TEXT DEFAULT NULL         
          )''')
-        
-        declareColumns = []
-        cursor.execute('''SELECT template_name, field_type from fields''')
-        for template_name, field_type in cursor.fetchall():
-            declareColumns.append(',%s %s DEFAULT NULL' % (template_name, {1: 'TEXT', 2: 'INTEGER'}[field_type]))
-            
-        cursor.execute('''DROP TABLE IF EXISTS dynamic_extra_tenant_data''')
-        cursor.execute('''
-        CREATE TABLE dynamic_extra_tenant_data (
-        tenant_id INTEGER NOT NULL        
-         %s        
-         )''' % ''.join(declareColumns))        
-        
+
+
 def GetTableHeaders(db_table):   
     names = []
     info_db = sqlite3.connect(utils.DB_INFO)            

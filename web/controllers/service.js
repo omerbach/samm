@@ -33,9 +33,11 @@ angular.module('sam').controller('serviceController', ['$scope', '$filter','$htt
 	this.loading = false;	
 	
 	this.statusOf = {1: 'פתוח', 2:'בטיפול', 3: 'סגור'};	
-	this.statusesWithIdle = [{status: 0, desc: 'הצג את כל קריאות השירות'}, {status: 1,desc: 'הצג קריאות שירות פתוחות'}, {status: 2, desc: 'הצג קריאות שירות בטיפול'}, {status: 4, desc:'הצג קריאות שירות סגורות'}, {status: 3, desc:'הצג קריאות שירות פעילות'}]
+	this.statusesWithIdle = [{status: 0, desc: 'הצג קריאות שירות בכל סטטוס'}, {status: 4,desc: 'קריאות שדורשות טיפול'}, {status: 1,desc: 'הצג קריאות שירות פתוחות'}, {status: 2, desc: 'הצג קריאות שירות בטיפול'}, {status: 4, desc:'הצג קריאות שירות סגורות'}, {status: 3, desc:'הצג קריאות שירות פעילות'}]
+	this.serviceType = [{status: 0, desc: 'הצג קריאות שירות מכל הסוגים'}, {status: 1,desc: 'הצג קריאות שירות שוטפות'}, {status: 2, desc: 'הצג טיפולים מונעים'}]
 	this.filterStatus = this.statusesWithIdle[0];
-	
+	this.filterType = this.serviceType[0];
+
 	this.openTime = new Date();
 	this.closeTime = new Date();	
 	
@@ -388,6 +390,7 @@ angular.module('sam').controller('serviceController', ['$scope', '$filter','$htt
 		params: {
 			updated_service_request_id: service_request_id,
 			status: tmp.filterStatus.status,
+			service_type: tmp.filterType.status,
 			building_id: tmp.buildingData.id,
 			tenant_id: tmp.tenantData.id,			
 			professional_id: tmp.professionalData.id,
@@ -443,32 +446,32 @@ angular.module('sam').controller('serviceController', ['$scope', '$filter','$htt
 		this.session.edit = true;		
 	};
 	
-	this.deleteServiceRequests = function(service_id) {
+	this.deleteServiceRequests = function(row) {
 		if (confirm('אשר מחיקת קריאות שירות') ) {
 			tmp = this;
 			chosenServices = [];
-			
-			if (service_id) {				
+			chosenPreventions = [];
+
+			if (row) {
+				service_id = row.service_id;
 				chosenServices = [service_id];
+
+				if (row.prevention_id) {
+                    chosenPreventions.push(row.prevention_id);
+                }
 			}
 			else {				
-				$.each(this.availableServiceRequests, function(index, data){				
-					if (data.service_selected) {			
+				$.each(this.availableServiceRequests, function(index, data){
+					if (data.service_selected) {
 						chosenServices.push(data.service_id);
-					}				
+					}
+					if (data.prevention_id) {
+						chosenPreventions.push(data.prevention_id);
+					}
 				});
 			}
-							
-			tmp.loading = true;
-			$http.post('/deleteServiceRequests', 
-			$.param(
-				{'service_ids': JSON.stringify(chosenServices)}
-			)).success(function(data) {				
-				tmp.loading = false;
-				tmp.GetServiceRequests();
-			}).error(function(data) {
-				console.log('response: ',data);
-			});
+
+			tmp.deleteServicePreventionPopUp(chosenServices, chosenPreventions);
 		}
 							
 	};
@@ -766,7 +769,7 @@ angular.module('sam').controller('serviceController', ['$scope', '$filter','$htt
 		});
 	};
 	
-	this.changeStatus = function(row, new_status) {		
+	this.changeStatus = function(row, new_status) {
 		this.changeStatusPopUp(row, new_status);
 	};
 		
@@ -801,6 +804,46 @@ angular.module('sam').controller('serviceController', ['$scope', '$filter','$htt
 		}, function () {
 		  $log.info('Modal dismissed at: ' + new Date());
 		});
+	};
+
+	this.deleteServicePreventionPopUp = function (chosenServices, chosenPreventions) {
+
+		tmp = this;
+        if (chosenPreventions.length) {
+            var modalInstance = $modal.open({
+              templateUrl: 'myServicePreventionModalContent.html',
+              controller: 'servicePreventionModalCtrl',
+              resolve: {}
+            });
+
+            modalInstance.result.then(function (delete_status) {
+                tmp.deleteServiceRequestsFromServer(chosenServices, chosenPreventions, delete_status);
+            }, function () {
+              tmp.delete_status = -1;
+              $log.info('Modal dismissed at: ' + new Date());
+            });
+
+         }
+         else {
+            tmp.deleteServiceRequestsFromServer(chosenServices, chosenPreventions, 0);
+         }
+	};
+
+	this.deleteServiceRequestsFromServer = function(chosenServices, chosenPreventions, delete_status) {
+        tmp.loading = true;
+        $http.post('/deleteServiceRequests',
+        $.param(
+            {
+                'service_ids': JSON.stringify(chosenServices),
+                'prevention_ids': JSON.stringify(chosenPreventions),
+                'delete_status': delete_status
+            }
+        )).success(function(data) {
+            tmp.loading = false;
+            tmp.GetServiceRequests();
+        }).error(function(data) {
+            console.log('response: ',data);
+        });
 	};
 	
 	this.MultiTypeElements = function(){			
@@ -934,6 +977,17 @@ angular.module('sam').controller('confirmationCtrl', ['$scope', '$modalInstance'
 
 	$scope.ok = function () {
 		$modalInstance.close();
+	};
+
+	$scope.cancel = function () {
+		$modalInstance.dismiss('cancel');
+	};
+}]);
+
+angular.module('sam').controller('servicePreventionModalCtrl', ['$scope', '$modalInstance', function($scope, $modalInstance) {
+
+	$scope.ok = function (delete_status) {
+		$modalInstance.close(delete_status);
 	};
 
 	$scope.cancel = function () {
