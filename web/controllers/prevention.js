@@ -13,6 +13,7 @@ angular.module('sam').controller('preventionController', ['$scope', '$filter','$
 	this.buildingData = "";
 	this.categoryData = "";
 	this.professionalData = "";
+	this.preventionData = "";
 		
 	this.showAddForm = false;
 	this.loading = false;	
@@ -55,7 +56,7 @@ angular.module('sam').controller('preventionController', ['$scope', '$filter','$
 		
 		if (params.sorting().building_name) {	
 			key = "building_id";
-			objectOf = this.buildingData.buildingObjectPerBuildingId;
+			objectOf = this.buildingOf;
 			direction = params.sorting().building_name;
 		}
 		else if (params.sorting().worker_name) {	
@@ -105,7 +106,7 @@ angular.module('sam').controller('preventionController', ['$scope', '$filter','$
 		//'this' inside the scope of success function will point to $http, so we store the controller pointer into tmp		
 		tmp.loading = true; 
 		
-		$http.post('/addNewPrevention',
+            $http.post('/addNewPrevention',
 			$.param({
 				prevention: JSON.stringify(this.session)
 			}
@@ -133,6 +134,7 @@ angular.module('sam').controller('preventionController', ['$scope', '$filter','$
 		
 		$http.get('/fetchBuildingsGeneral', {
 		}).success(function(data) {
+		        tmp.buildingOf = data;
 				tmp.availableBuildings = _.values(data);
 				tmp.loading = false;				
 		});
@@ -178,6 +180,16 @@ angular.module('sam').controller('preventionController', ['$scope', '$filter','$
 			name: val
 			}
 		}).then(function(res) {		
+			return res.data;
+		});
+	};
+
+	this.guessPreventionName = function(val) {
+		return $http.get('/guessPrevention', {
+			params: {
+			name: val
+			}
+		}).then(function(res) {
 			return res.data;
 		});
 	};
@@ -279,6 +291,7 @@ angular.module('sam').controller('preventionController', ['$scope', '$filter','$
 	
 	//call server to get all prevention Requests' info
 	this.GetPreventions = function(prevention_id, building_id_input, worker_id_input, professional_id_input, showmore){
+
 		if (!showmore) {
 			this.limit = 25;
 		}
@@ -288,13 +301,14 @@ angular.module('sam').controller('preventionController', ['$scope', '$filter','$
 		tmp.masterCheckBoxState = 1;		
 		tmp.loading = true; 
 		tmp.clearSelections();
-		
+
 		//http://stackoverflow.com/questions/17225088/http-get-parameters-does-not-work
 		$http.get('/fetchPreventions', {
 		params: {
 			updated_prevention_id: prevention_id,
 			building_id: tmp.buildingData.id,
 			professional_id: tmp.professionalData.id,
+			description: tmp.preventionData.id,
 			limit: tmp.limit
 		}
 		}).success(function(data) {					
@@ -331,41 +345,46 @@ angular.module('sam').controller('preventionController', ['$scope', '$filter','$
 
 	this.ClonePrevention = function() {
 		tmp = this;
-		var modalInstance = $modal.open({
-		  templateUrl: 'myCopyBuildingModalContent.html',
-		  controller: 'myCopyBuildingCtrl',
-		  resolve: {
-			availablePreventions: function () {
-			  return tmp.availablePreventions;
-			},
-			availableBuildings: function () {
-			  return tmp.availableBuildings;
-			}
-		  }
-		});
 
-		modalInstance.result.then(function (res) {
-		    tmp.loading = true;
-
-            console.log('res: ', res);
-            target_building = res.target_building;
-            source_preventions = res.source_preventions;
-
-            console.log('yo: ',target_building, source_preventions);
-            $http.post('/bulkPreventions',
-                $.param({
-                    preventions: JSON.stringify(source_preventions),
-                    target_building: target_building
+        $http.get('/fetchDistinctPreventionNames', {
+		params: {}
+		}).success(function(distinct_preventions) {
+		    var modalInstance = $modal.open({
+              templateUrl: 'myCopyBuildingModalContent.html',
+              controller: 'myCopyBuildingCtrl',
+              resolve: {
+                availablePreventions: function () {
+                  return distinct_preventions;
+                },
+                availableBuildings: function () {
+                  return tmp.availableBuildings;
                 }
-                )).success(function(data) {
-                    tmp.loading = false;
-                    tmp.showAddForm = false;
-                    tmp.reset_session();
-                    tmp.GetPreventions();
+              }
             });
-		}, function () {
-		  $log.info('Modal dismissed at: ' + new Date());
+
+            modalInstance.result.then(function (res) {
+                tmp.loading = true;
+
+                target_building = res.target_building;
+                source_preventions = res.source_preventions;
+
+                $http.post('/bulkPreventions',
+                    $.param({
+                        preventions: JSON.stringify(source_preventions),
+                        target_building: target_building
+                    }
+                    )).success(function(data) {
+                        tmp.buildingData = {"id": target_building, "name": tmp.buildingOf[target_building].name};
+                        tmp.loading = false;
+                        tmp.showAddForm = false;
+                        tmp.reset_session();
+                        tmp.GetPreventions();
+                });
+            }, function () {
+              $log.info('Modal dismissed at: ' + new Date());
+            });
 		});
+
 	};
 	
 	this.editPrevention = function(prevention_details) {
@@ -543,7 +562,7 @@ angular.module('sam').controller('preventionController', ['$scope', '$filter','$
 	this.partialyData = function() {
 
 		tmp = this;
-		basicFieldExists =  this.atLeastOneMonthChosen(tmp.session) && tmp.toStr(tmp.session.building_id).length > 0  && tmp.toStr(tmp.session.professional_id).length > 0 && tmp.toStr(tmp.session.description).length > 0;
+		basicFieldExists =  this.atLeastOneMonthChosen(tmp.session) && tmp.toStr(tmp.session.building_id).length > 0 && tmp.toStr(tmp.session.description).length > 0;
 		return !basicFieldExists;
 	};
 	
@@ -570,6 +589,9 @@ angular.module('sam').controller('myCopyBuildingCtrl', ['$scope', '$modalInstanc
 
     tmp = this;
 
+    $scope.filterOptions = {
+		filterText: ""
+	};
 	$scope.availablePreventions = availablePreventions;
 	$scope.allBuildings = allBuildings;
 
@@ -581,8 +603,6 @@ angular.module('sam').controller('myCopyBuildingCtrl', ['$scope', '$modalInstanc
 	            source_preventions.push(prev);
 	        }
 	    });
-
-	    console.log('indlg: ',target_building.id, source_preventions);
 
 		$modalInstance.close({'target_building': target_building.id, 'source_preventions': source_preventions});
 	};

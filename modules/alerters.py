@@ -199,7 +199,8 @@ class Alerter(object):
                             service_request_id = "",
                             service_request_description = "",
                             parking_debt = 0,
-                            previous_debt_2012 = 0):
+                            previous_debt_2012 = 0,
+                            special = 0):
         
         if not path and not templateStr:            
             return ''                
@@ -268,7 +269,8 @@ class Alerter(object):
                                                        'service_request_id': service_request_id,
                                                        'service_request_description': service_request_description,
                                                        'parking_debt': parking_debt,
-                                                       'previous_debt_2012': previous_debt_2012
+                                                       'previous_debt_2012': previous_debt_2012,
+                                                       'special': utils.Commafy(special)
                                                    })
                 
         return alertTemplateContent    

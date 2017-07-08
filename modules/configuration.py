@@ -1,4 +1,4 @@
-from ConfigParser import SafeConfigParser
+from ConfigParser import SafeConfigParser, NoOptionError
 import codecs
 
 #testing
@@ -12,7 +12,6 @@ class Config(object):
 
     def __str__(self):
         pass
-    #helloe leoolsl sod osd then again
     #[file_system]
     @property
     def rootBuildingsDir(self):
@@ -160,4 +159,17 @@ class Config(object):
     @property
     def mailFromGeneral (self):
         return self.parser.get('alerts', 'mail_from_general')
-    
+
+    @property
+    def service_sla(self):
+        try:
+            sercive_sla = self.parser.get('alerts', 'service_sla')
+            try:
+                sercive_sla = int(sercive_sla)
+            except ValueError:
+                sercive_sla = 14
+
+        except NoOptionError:
+            sercive_sla = 14
+
+        return sercive_sla

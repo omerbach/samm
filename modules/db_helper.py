@@ -597,7 +597,8 @@ def PrepareDataBases():
          end_date DATETIME DEFAULT NULL,
          cost INTEGER DEFAULT 0,
          comment TEXT DEFAULT NULL,
-         reminders INTEGER DEFAULT 0
+         reminders INTEGER DEFAULT 0,
+         prevention_id INTEGER DEFAULT 0
          )''')
 
         cursor.execute('''

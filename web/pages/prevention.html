@@ -3,21 +3,6 @@
             <h3 class="modal-title">שיכפול טיפול בין בניינים</h3>
         </div>
         <div dir="rtl" class="modal-body">
-
-			<span>מקור</span>
-			<select
-				dir="rtl"
-				style="width: 100%"
-				id="sourceBuildings"
-				ui-select2 = "{allowClear : true}"
-				ng-model='source_building'
-				data-placeholder='בחר בנין שישמש להעתקה '
-				name='source'
-				ng-options="sb as sb.building_name for sb in availablePreventions  | unique:'building_name'"">
-				<option></option>
-			</select>
-			<br/><br/>
-
 			<span>יעד</span>
 			<select
 				dir="rtl"
@@ -33,18 +18,18 @@
 
 			<br/><br/>
 
-			<div collapse="!source_building">
+			<input style="margin-bottom: 15px;" tooltip="התחילו להקליד ורשימת הטיפולים תצטמצם בהתאם" dir="rtl" class="filter_list form-control" auto-focus type="text" ng-model="filterOptions.filterText" placeholder="התחל להקליד ורשימת הטיפולים תתצמצם בהתאם">
+
+			<div>
 				<table style="border: 1px solid #CCC; width: 100%;" dir='rtl'>
 					<tr>
 						<th class="sam_th">תיאור</th>
-						<th class="sam_th">חודשים</th>
 						<th class="sam_th">קטגוריה</th>
 					</tr>
 
-					<tr ng-repeat="prev in availablePreventions" ng-if="source_building.building_id == prev.building_id" ng-class-odd="'odd'">
-						<td ng-class="{'line-through': !prev.copy_prevention_selected }" class="sam_td"><input style="margin-left: 3px;" ng-model="prev.copy_prevention_selected" ng-init="prev.copy_prevention_selected=true" type="checkbox">{{prev.description}}</td>
-						<td ng-class="{'line-through': !prev.copy_prevention_selected }" class="sam_td">{{prev.months}}</td>
-						<td ng-class="{'line-through': !prev.copy_prevention_selected }" class="sam_td">{{prev.category}}</td>
+					<tr ng-repeat="prev in availablePreventions | filter:filterOptions.filterText" ng-class-odd="'odd'">
+						<td class="sam_td"><input style="margin-left: 3px;" ng-model="prev.copy_prevention_selected" type="checkbox">{{prev.description}}</td>
+						<td class="sam_td">{{prev.category}}</td>
 					</tr>
 				</table>
 			</div-->
@@ -53,7 +38,7 @@
 
         </div>
         <div dir="rtl" class="modal-footer">
-            <button class="btn btn-primary" ng-disabled = "!source_building || !target_building" ng-click="ok(target_building)">שכפל</button>
+            <button class="btn btn-primary" ng-disabled = "!target_building" ng-click="ok(target_building)">שכפל</button>
 			<button class="btn btn-danger" ng-click="cancel()">ביטול</button>
         </div>
 
@@ -128,13 +113,19 @@
 						<input ng-class="{'filter_on': prevention.professionalData.name.length }" tooltip="משלים אוטומטית בעלי מקצוע ,לפנק, לפנק, לפנק" ng-change="prevention.AutoCompleteChange(prevention.professionalData)" typeahead-on-select="prevention.GetPreventions()" type="text" ng-model="prevention.professionalData" placeholder="התחל להקליד בעל מקצוע" typeahead="data as data.name for data in prevention.guessProfessional($viewValue)" typeahead-loading="loadingLocations" class="form-control">
 					</div>
 
-                    <div ng-show="!prevention.showAddForm" class="col-md-4">
+
+                    <!--div ng-show="!prevention.showAddForm" class="col-md-4">
 						<input ng-class="{'filter_on': prevention.categoryData.name.length }" tooltip="משלים אוטומטית קטגוריה ,לפנק, לפנק, לפנק" ng-change="prevention.AutoCompleteChange(prevention.categoryData)" typeahead-on-select="prevention.GetPreventions()" auto-focus type="text" ng-model="prevention.categoryData" placeholder="התחל להקליד קטגוריה" typeahead="data as data.name for data in prevention.guessCategory($viewValue)" typeahead-loading="loadingLocations" class="form-control">
+					</div-->
+
+					<div ng-show="!prevention.showAddForm" class="col-md-4">
+						<input ng-class="{'filter_on': prevention.preventionData.name.length }" tooltip="משלים אוטומטית בניינים ,לפנק, לפנק, לפנק" ng-change="prevention.AutoCompleteChange(prevention.preventionData)" typeahead-on-select="prevention.GetPreventions()" auto-focus type="text" ng-model="prevention.preventionData" placeholder="התחל להקליד שם טיפול" typeahead="data as data.name for data in prevention.guessPreventionName($viewValue)" typeahead-loading="loadingLocations" class="form-control">
 					</div>
 
 					<div ng-show="!prevention.showAddForm" class="col-md-4">
 						<input ng-class="{'filter_on': prevention.buildingData.name.length }" tooltip="משלים אוטומטית בניינים ,לפנק, לפנק, לפנק" ng-change="prevention.AutoCompleteChange(prevention.buildingData)" typeahead-on-select="prevention.GetPreventions()" auto-focus type="text" ng-model="prevention.buildingData" placeholder="התחל להקליד שם בנין" typeahead="data as data.name for data in prevention.guessBuildingName($viewValue)" typeahead-loading="loadingLocations" class="form-control">
 					</div>
+
 
 					<br/>
 					<br/>
@@ -150,9 +141,27 @@
 							<input id="input-status-prevention" class="form-control" name="description" type="text" placeholder="תיאור*" required ng-model="prevention.session.description" />
 						</div>
 
+						<div class="form-group" required ng-class="{'has-error': loginForm.building.$invalid}">
+                            <span dir="rtl" class="bold">בנין</span>
+							<select
+                                ng-class="{mandatory: !prevention.session.building_id}"
+								dir="rtl"
+								style="width: 100%"
+								id="availableBuildings"
+								ui-select2 = "{allowClear : true}"
+								ng-model='prevention.session.building_id'
+								data-placeholder='בנין*'
+								name='building'
+								ng-change='prevention.UpdateBuildingTenants()'>
+								<!-- http://stackoverflow.com/questions/25694021/two-way-databinding-in-select2-for-angularjs-doesnt-work-in-angular-1-2-13#25694274 -->
+								<option value=""></option>
+								<option ng-repeat="building in prevention.availableBuildings" value="{{building.id}}">{{building.name}}</option>
+							</select>
+						</div>
+
                         <div class="form-group" ng-class="{'has-error': loginForm.months.$invalid}">
                             <span dir="rtl" class="bold">חודשים</span>&nbsp;
-                            <table ng-class="{mandatory: !prevention.atLeastOneMonthChosen(prevention.session)}">
+                            <table style="border: solid 1px #cccccc; width: 100%; text-align: center;" ng-class="{mandatory: !prevention.atLeastOneMonthChosen(prevention.session)}">
                                 <tr>
                                     <th style="text-align: center;"><i class="fa fa-check"></i></th>
                                     <th style="text-align: center;">1</th>
@@ -169,62 +178,43 @@
                                     <th style="text-align: center;">12</th>
                                 </tr>
                                 <tr>
-                                    <td class="sam_td tenant_letter_checkbox"><input ng-change="prevention.updateAllMonths(prevention.session)" ng-model="prevention.session.all_months" type="checkbox"></td>
-                                    <td class="sam_td tenant_letter_checkbox"><input ng-model="prevention.session.january" type="checkbox"></td>
-                                    <td class="sam_td tenant_letter_checkbox"><input ng-model="prevention.session.february" type="checkbox"></td>
-                                    <td class="sam_td tenant_letter_checkbox"><input ng-model="prevention.session.march" type="checkbox"></td>
-                                    <td class="sam_td tenant_letter_checkbox"><input ng-model="prevention.session.april" type="checkbox"></td>
-                                    <td class="sam_td tenant_letter_checkbox"><input ng-model="prevention.session.may" type="checkbox"></td>
-                                    <td class="sam_td tenant_letter_checkbox"><input ng-model="prevention.session.june" type="checkbox"></td>
-                                    <td class="sam_td tenant_letter_checkbox"><input ng-model="prevention.session.july" type="checkbox"></td>
-                                    <td class="sam_td tenant_letter_checkbox"><input ng-model="prevention.session.august" type="checkbox"></td>
-                                    <td class="sam_td tenant_letter_checkbox"><input ng-model="prevention.session.september" type="checkbox"></td>
-                                    <td class="sam_td tenant_letter_checkbox"><input ng-model="prevention.session.october" type="checkbox"></td>
-                                    <td class="sam_td tenant_letter_checkbox"><input ng-model="prevention.session.november" type="checkbox"></td>
-                                    <td class="sam_td tenant_letter_checkbox"><input ng-model="prevention.session.december" type="checkbox"></td>
+                                    <td style="padding: 5px !important;"><input ng-change="prevention.updateAllMonths(prevention.session)" ng-model="prevention.session.all_months" type="checkbox"></td>
+                                    <td style="padding: 5px !important;"><input ng-model="prevention.session.january" type="checkbox"></td>
+                                    <td style="padding: 5px !important;"><input ng-model="prevention.session.february" type="checkbox"></td>
+                                    <td style="padding: 5px !important;"><input ng-model="prevention.session.march" type="checkbox"></td>
+                                    <td style="padding: 5px !important;"><input ng-model="prevention.session.april" type="checkbox"></td>
+                                    <td style="padding: 5px !important;"><input ng-model="prevention.session.may" type="checkbox"></td>
+                                    <td style="padding: 5px !important;"><input ng-model="prevention.session.june" type="checkbox"></td>
+                                    <td style="padding: 5px !important;"><input ng-model="prevention.session.july" type="checkbox"></td>
+                                    <td style="padding: 5px !important;"><input ng-model="prevention.session.august" type="checkbox"></td>
+                                    <td style="padding: 5px !important;"><input ng-model="prevention.session.september" type="checkbox"></td>
+                                    <td style="padding: 5px !important;"><input ng-model="prevention.session.october" type="checkbox"></td>
+                                    <td style="padding: 5px !important;"><input ng-model="prevention.session.november" type="checkbox"></td>
+                                    <td style="padding: 5px !important;"><input ng-model="prevention.session.december" type="checkbox"></td>
                                 </tr>
                             </table>
+						</div>
+
+						<div class="form-group" ng-class="{'has-error': loginForm.professional.$invalid}">
+                            <span dir="rtl" class="bold">בעל מקצוע</span>
+							<select
+								dir="rtl"
+								style="width: 100%"
+								id="availableProfessionals"
+								ui-select2 = "{allowClear : true}"
+								ng-model='prevention.session.professional_id'
+								data-placeholder='בעל מקצוע מטפל'
+								name='professional'
+								ng-change='prevention.ProfessionalChanged()'>
+								<!-- http://stackoverflow.com/questions/25694021/two-way-databinding-in-select2-for-angularjs-doesnt-work-in-angular-1-2-13#25694274 -->
+								<option value=""></option>
+								<option ng-repeat="professional in prevention.availableProfessionals" value="{{professional.professional_id}}">{{professional.name}} | {{professional.category}} | {{professional.phones}}</option>
+							</select>
 						</div>
 						
 						<div class="form-group">
                             <span dir="rtl" class="bold">קטגוריה</span>
 							<input name="category" type="text" ng-model="prevention.session.category" placeholder="קטגוריה" typeahead="data.id as data.name for data in prevention.guessCategory($viewValue)" typeahead-loading="loadingLocations" class="form-control">
-						</div>
-						
-						<div class="form-group" required ng-class="{'has-error': loginForm.building.$invalid}">
-                            <span dir="rtl" class="bold">בנין</span>
-							<select
-                                ng-class="{mandatory: !prevention.session.building_id}"
-								dir="rtl"
-								style="width: 100%"
-								id="availableBuildings"
-								ui-select2 = "{allowClear : true}"
-								ng-model='prevention.session.building_id'
-								data-placeholder='בנין*'
-								name='building'
-								ng-change='prevention.UpdateBuildingTenants()'>								
-								<!-- http://stackoverflow.com/questions/25694021/two-way-databinding-in-select2-for-angularjs-doesnt-work-in-angular-1-2-13#25694274 -->								
-								<option value=""></option>
-								<option ng-repeat="building in prevention.availableBuildings" value="{{building.id}}">{{building.name}}</option>							   
-							</select>					
-						</div>
-						
-						<div class="form-group" ng-class="{'has-error': loginForm.professional.$invalid}">
-                            <span dir="rtl" class="bold">בעל מקצוע</span>
-							<select
-                                ng-class="{mandatory: !prevention.session.professional_id}"
-								dir="rtl"
-								style="width: 100%"
-								id="availableProfessionals"
-								ui-select2 = "{allowClear : true}"							
-								ng-model='prevention.session.professional_id'
-								data-placeholder='בעל מקצוע מטפל*'
-								name='professional'
-								ng-change='prevention.ProfessionalChanged()'>
-								<!-- http://stackoverflow.com/questions/25694021/two-way-databinding-in-select2-for-angularjs-doesnt-work-in-angular-1-2-13#25694274 -->								
-								<option value=""></option>
-								<option ng-repeat="professional in prevention.availableProfessionals" value="{{professional.professional_id}}">{{professional.name}} | {{professional.category}} | {{professional.phones}}</option>
-							</select>					
 						</div>
 						
 						<div class="form-group" ng-class="{'has-error': loginForm.worker.$invalid}">
@@ -279,9 +269,9 @@
 					<input class="sam_column_checkbox" ng-model="prevention.column_comment" type="checkbox"/>הערה |
 					<input class="sam_column_checkbox" ng-model="prevention.column_cost" type="checkbox"/>עלות
 				</div>
-				
+
 				<table id="prevention_table" dir='rtl' ng-table="prevention.tableParams">
-					<tr ng-repeat="row in prevention.availablePreventions track by row.prevention_id" ng-class-odd="'odd'" ng-class="{modified: row.prevention_selected}">
+					<tr ng-repeat="row in prevention.availablePreventions track by row.prevention_id" ng-class-odd="'odd'" ng-class="{modified: row.prevention_selected, must: !row.linked_services || !row.months.length}" >
 						<td header="'smart_checkbox_header.html'" class="sam_td prevention_checkbox">
 							<input ng-model="row.prevention_selected" class="checkBoxAlerts" type="checkbox"/>
 						</td>
@@ -309,7 +299,7 @@
 					 
 				</table>
 				
-				<button ng-show="prevention.maximum_records > prevention.availablePreventions.length" style="width: 100%;" ng-click="prevention.limit = prevention.limit  + 25; prevention.GetPreventions(0, '', '', '', '', true);">
+				<button ng-show="prevention.maximum_records > prevention.availablePreventions.length" style="width: 100%;" ng-click="prevention.limit = prevention.limit  + 25; prevention.GetPreventions(0, '', '', '', true);">
 					הצג עוד תוצאות
 					<span ng-show="prevention.isLoading()"><i class="fa fa-spin fa-spinner"></i></span>
 				</button>				

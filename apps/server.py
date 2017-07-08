@@ -694,12 +694,26 @@ def deletePreventions():
                     DELETE FROM service where prevention_id in (%s)
                     ''' % ','.join(str(b) for b in prevention_ids))
 
+
+@bottle.route('/fetchDistinctPreventionNames')
+def fetchDistinctPreventionNames():
+
+    info_db = sqlite3.connect(utils.DB_INFO)
+    with info_db as connection:
+        cursor = connection.cursor()
+        cursor.execute('select distinct description, category from prevention order by description asc')
+
+        distinct_names = [{'description': d, 'category': c} for d, c in cursor]
+
+    return json.dumps(distinct_names)
+
 #gets service requests info from the database
 @bottle.route('/fetchPreventions')
 def fetchPreventions():
 
     building_id = bottle.request.query.building_id
     professional_id = bottle.request.query.professional_id
+    prevention_description = bottle.request.query.description
 
     lastUpdatedPrevention = bottle.request.query.updated_prevention_id if len(bottle.request.query.updated_prevention_id) else 0
 
@@ -742,13 +756,15 @@ def fetchPreventions():
 
     if len(building_id):
         query_ext.append('r.building_id = ?')
-        #query_ext += " AND p.building_id = ?"
         parameters += [building_id]
 
     if len(professional_id):
         query_ext.append('r.professional_id = ?')
-        #query_ext += " AND p.professional_id = ?"
         parameters += [professional_id]
+
+    if len(prevention_description):
+        query_ext.append('r.description = ?')
+        parameters += [prevention_description]
 
     extra = ' AND '.join(query_ext)
     if len(extra):
@@ -765,12 +781,11 @@ def fetchPreventions():
 
     #now for the main query
     if limit:
-        #query_ext += " LIMIT %d" % limit
         extra += " LIMIT %d" % limit
 
     query += extra
-    cursor.execute(query, parameters)
 
+    cursor.execute(query, parameters)
 
     preventionOf =  { pId: {
         'prevention_id': pId,
@@ -890,7 +905,6 @@ def addPaymentToDb(payment_details):
             tenant_cheque_date = payment_details.get("tenant_cheque_date", "")
             
             for i in range(quantity):                
-                print "tenant_cheque_identifier: ", tenant_cheque_identifier 
                 cursor.execute('''
                 INSERT INTO payments 
                 (status, tenant_id, 
@@ -921,8 +935,6 @@ def addPaymentToDb(payment_details):
                 payment_id = cursor.lastrowid
                 payment_ids.append(payment_id)
 
-            
-    print 'payment_ids', payment_ids
     return {'payment_ids': payment_ids}
 
 #gets service requests info from the database
@@ -1106,9 +1118,7 @@ def copyTemplate():
     template_path = os.path.join('templates', template_name)
     
     template_copy = utils.GenerateDirCopy('templates', template_name, ' - עותק'.decode('utf-8'))
-    #print template_copied_path
-    
-    #template_copy =  'עותק של '.decode('utf-8') + template_name
+
     template_copied_path = os.path.join('templates', template_copy)
     shutil.copytree(template_path, template_copied_path)
     
@@ -1335,13 +1345,16 @@ def fetchServiceRequests():
 
     if len(status) and int(status):
         if int(status) == 4:
-            parameters[1] = datetime.datetime.now() + datetime.timedelta(days=14)
+            #pull only service requests which are opened/in progress
             status = 3
             statuses = utils.DecimalBreakDown(status)
             question_marks = ['?' for s in statuses]
             query_ext += " AND s.status in (%s)" % ','.join(question_marks)
             for st in statuses:
                 parameters += [st]
+
+            query_ext += "AND DATE(s.start_date) < ?"
+            parameters += [datetime.datetime.now().date() - datetime.timedelta(days=utils.config.service_sla)]
 
     if len(service_type) and int(service_type):
         if int(service_type) == 1:
@@ -1363,12 +1376,7 @@ def fetchServiceRequests():
 
     query_ext += " ORDER BY s.start_date DESC"        
 
-    print 
-    print
-    print 'SELECT COUNT(*) FROM service as s WHERE DATE(s.start_date) between ? AND ? %s' % query_ext, parameters
-    print 
-    print    
-    cursor.execute('SELECT COUNT(*) FROM service as s WHERE DATE(s.start_date) between ? AND ? %s' % query_ext, parameters)    
+    cursor.execute('SELECT COUNT(*) FROM service as s WHERE DATE(s.start_date) between ? AND ? %s' % query_ext, parameters)
     res = cursor.fetchone()
     if res:
         maximum_records, = res
@@ -1379,13 +1387,10 @@ def fetchServiceRequests():
     if limit:
         query_ext += " LIMIT %d" % limit    
 
+
     query += query_ext
-    print 
-    print
-    print query
-    print
-    print
-    cursor.execute(query, parameters)        
+
+    cursor.execute(query, parameters)
 
     serviceOf =  { sId: {
         'service_id': sId, 
@@ -1403,7 +1408,7 @@ def fetchServiceRequests():
         'comment': sComment,
         'reminders': sReminders,
         'service_selected': int(lastUpdatedServiceRequest) == int(sId),
-        'must_attend': dates.date(sStartDate) < (datetime.datetime.now() + datetime.timedelta(days=6)).date() and (int(sStatus) == 1 or int(sStatus) == 2),
+        'must_attend': (dates.date(sStartDate) + datetime.timedelta(days=utils.config.service_sla)) < datetime.datetime.now().date() and (int(sStatus) == 1 or int(sStatus) == 2),
         'building_name': building_name,
         'tenant_name': tenant_name,
         'worker_name': worker_name,
@@ -1527,6 +1532,26 @@ def GuessBuilding():
 
     cursor.execute(query)
     guesses = list( {'id': buildingId, 'name': buildingName} for buildingId, buildingName in cursor.fetchall())
+
+    return json.dumps(guesses)
+
+#get a list of prevention names by the user input
+@bottle.route('/guessPrevention')
+def guessPrevention():
+
+    guesses = []
+    info_db = sqlite3.connect(utils.DB_INFO)
+    cursor=info_db.cursor()
+
+    user_input = bottle.request.query.name
+
+    query = """
+        SELECT DISTINCT description 
+        FROM prevention
+        WHERE description like '%%%s%%'""" % user_input
+
+    cursor.execute(query)
+    guesses = list({'id': description, 'name': description} for (description,) in cursor.fetchall())
 
     return json.dumps(guesses)
 
@@ -2169,19 +2194,30 @@ def addNewServiceRequest():
 
     return {'service_request_id': service_request_id}
 
-def bulkServiceRequests(service_request_details, service_dates):
+
+def bulkServiceRequests(prevention_details, months_list):
+
+    # create service requests for five years in the future
+    current_year = datetime.datetime.now().year
+    service_dates = [
+        datetime.datetime.strptime('%s-%s 08:00:00' % (current_year + i, m), '%Y-%m %H:%M:%S') for m in months_list
+        for i in range(6)
+        if datetime.datetime.now() < datetime.datetime.strptime('%s-%s 08:00:00' % (current_year + i, m),
+                                                                '%Y-%m %H:%M:%S')
+    ]
+
     service_requests = []
-    description = 0 if service_request_details.get("description", "") == "" else service_request_details["description"]
-    category = 0 if service_request_details.get("category", "") == "" else service_request_details["category"]
-    building_id = 0 if service_request_details.get("building_id", "") == "" else service_request_details["building_id"]
-    tenant_id = 0 if service_request_details.get("tenant_id", "") == "" else service_request_details["tenant_id"]
-    worker_id = 0 if service_request_details.get("worker_id", "") == "" else service_request_details["worker_id"]
-    professional_id = 0 if service_request_details.get("professional_id", "") == "" else service_request_details[
+    description = 0 if prevention_details.get("description", "") == "" else prevention_details["description"]
+    category = "" if prevention_details.get("category", "") == "" else prevention_details["category"]
+    building_id = 0 if prevention_details.get("building_id", "") == "" else prevention_details["building_id"]
+    tenant_id = 0 if prevention_details.get("tenant_id", "") == "" else prevention_details["tenant_id"]
+    worker_id = 0 if prevention_details.get("worker_id", "") == "" else prevention_details["worker_id"]
+    professional_id = 0 if prevention_details.get("professional_id", "") == "" else prevention_details[
         "professional_id"]
-    prevention_id = 0 if service_request_details.get("prevention_id", "") == "" else service_request_details[
+    prevention_id = 0 if prevention_details.get("prevention_id", "") == "" else prevention_details[
         "prevention_id"]
-    cost = 0 if service_request_details.get("cost", "") == "" else service_request_details["cost"]
-    comment = 0 if service_request_details.get("comment", "") == "" else service_request_details["comment"]
+    cost = 0 if prevention_details.get("cost", "") == "" else prevention_details["cost"]
+    comment = 0 if prevention_details.get("comment", "") == "" else prevention_details["comment"]
 
     # insert new ones now
     for d in service_dates:
@@ -2202,8 +2238,6 @@ def bulkServiceRequests(service_request_details, service_dates):
     with info_db as connection:
         cursor = connection.cursor()
 
-        print prevention_id
-
         #first delete all the future ones
         cursor.execute('''
         DELETE FROM service where prevention_id = ? AND DATE(start_date) > ?
@@ -2221,29 +2255,34 @@ def bulkServiceRequests(service_request_details, service_dates):
 def bulkPreventions():
     f = bottle.request.forms
     preventions = json.loads(f.preventions)
-
-    db_preventions = []
     target_building = f.target_building
 
-    for p in preventions:
-        db_preventions.append((
-            p["description"],
-            p["category"],
-            target_building,
-            p["worker_id"],
-            p["professional_id"],
-            p["months"],
-            p["cost"],
-            p["comment"]
-        ))
-
     info_db = sqlite3.connect(utils.DB_INFO)
-    with info_db as connection:
-        cursor = connection.cursor()
-        cursor.executemany('''
+
+    # create service requests per each prevention
+    for prevention_details in preventions:
+        prevention_details["months"] = '1,2,3,4,5,6,7,8,9,10,11,12'
+        with info_db as connection:
+            cursor = connection.cursor()
+            prevention_details["building_id"] = target_building
+            cursor.execute('''
             INSERT INTO prevention (description, category, building_id, worker_id, professional_id, months, cost, comment) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ''', db_preventions)
+            ''', (prevention_details.get("description", ""),
+                  prevention_details.get("category", ""),
+                  prevention_details.get("building_id", ""),
+                  prevention_details.get("worker_id", ""),
+                  prevention_details.get("professional_id", ""),
+                  prevention_details.get("months", ""),
+                  prevention_details.get("cost", ""),
+                  prevention_details.get("comment", "")
+                  ))
+
+            prevention_details["prevention_id"] = cursor.lastrowid
+
+    for prevention_details in preventions:
+        # create necessary service requests
+        bulkServiceRequests(prevention_details, prevention_details["months"].split(','))
 
 
 @bottle.post('/addNewPrevention')
@@ -2324,17 +2363,9 @@ def addNewPrevention():
 
             prevention_id = cursor.lastrowid
 
-    current_year = datetime.datetime.now().year
-    # create service requests for five years in the future
-    toOpen = [
-        datetime.datetime.strptime('%s-%s 08:00:00' % (current_year + i, m), '%Y-%m %H:%M:%S') for m in months_list
-        for i in range(6)
-        if datetime.datetime.now() < datetime.datetime.strptime('%s-%s 08:00:00' % (current_year + i, m),
-                                                                '%Y-%m %H:%M:%S')
-    ]
 
     prevention_details["prevention_id"] = prevention_id
-    bulkServiceRequests(prevention_details, toOpen)
+    bulkServiceRequests(prevention_details, months_list)
 
     return {'prevention_id': prevention_id}
 
@@ -2715,12 +2746,13 @@ if __name__ == '__main__':
 
     #enabling bottle to receive large messages
     #http://stackoverflow.com/questions/16865997/python-bottle-module-causes-error-413-request-entity-too-large
+
     bottle.BaseRequest.MEMFILE_MAX = 1024 * 1024     
     utils.UpdateSamProcess(os.getpid())        
     db_helper.PrepareDataBases()
     print 'start: %s' % datetime.datetime.now()
-    #db_data = excel_helper.BuildFromScratch(fromDir = utils.config.rootBuildingsDir)
-    #db_helper.UpdateDataBase(db_data)
+    db_data = excel_helper.BuildFromScratch(fromDir = utils.config.rootBuildingsDir)
+    db_helper.UpdateDataBase(db_data)
     print 'end: %s' % datetime.datetime.now() 
 
     bottle.run(port=3389, host='0.0.0.0', server='paste')

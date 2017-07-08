@@ -470,7 +470,7 @@
 		}).success(function(data) {			
 			//clear this for future calls			
 			$routeParams.tenantId = 0;
-			tmp.UpdateTenants(_.values(data));				
+			tmp.UpdateTenants(_.values(data));
 		});
 	};
 	
@@ -893,7 +893,7 @@ angular.module('sam').controller('previewCtrl', ['$scope', '$modalInstance', '$h
 				mail_subject: $scope.template.mail_subject
 				
 			}
-			}).success(function(data) {				
+			}).success(function(data) {
 				$scope.alert_content = data;
 			}).
 			error(function(data) {

@@ -242,6 +242,14 @@ background-position: -313px -119px;
 	background-color: #ffc107 !important;
 }
 
+.prevention_request {
+	background-color: #8fcbe6;
+}
+
+.odd.prevention_request {
+	background-color: #b1d8ea;
+}
+
 .data_required{
 	background-color: #E97A7E !important;
 }

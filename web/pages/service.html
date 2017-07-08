@@ -434,7 +434,7 @@
 				</div>
 				
 				<table id="service_table" dir='rtl' ng-table="service.tableParams">				
-					<tr ng-repeat="row in service.availableServiceRequests track by row.service_id" ng-class-odd="'odd'" ng-class="{modified: row.service_selected, must: row.must_attend}">
+					<tr ng-repeat="row in service.availableServiceRequests track by row.service_id" ng-class-odd="'odd'" ng-class="{modified: row.service_selected, must: row.must_attend, 'prevention_request': row.prevention_id}">
 						<td header="'smart_checkbox_header.html'" class="sam_td service_checkbox">
 							<input ng-model="row.service_selected" class="checkBoxAlerts" type="checkbox"/>
 							<div class="btn-group">							
