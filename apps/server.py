@@ -470,7 +470,8 @@ def fetchServiceData():
     return { 'buildingObjectPerBuildingId': buildingObjectPerBuildingId,
              'tenantObjectPerTenantId': tenantObjectPertenantId,
              'tenantsIdsPerBuildingId': tenantsIdsPerBuildingId,
-             'buildingIdPerTenantId': buildingIdPerTenantId }
+             'buildingIdPerTenantId': buildingIdPerTenantId,
+             'service_sla': utils.config.service_sla}
 
 def GetMultiTypeElements(include_specific_buildings = False, tenants_from_building_id = 0):
     
@@ -1342,19 +1343,32 @@ def fetchServiceRequests():
         '''
 
     query_ext = ''
-
+    statuses = []
     if len(status) and int(status):
-        if int(status) == 4:
-            #pull only service requests which are opened/in progress
-            status = 3
-            statuses = utils.DecimalBreakDown(status)
-            question_marks = ['?' for s in statuses]
-            query_ext += " AND s.status in (%s)" % ','.join(question_marks)
-            for st in statuses:
-                parameters += [st]
+        status = int(status)
 
+        # pull only service requests which are opened/in progress
+        if status == 4 or status == 5:
+            statuses = [1, 2]
+
+        if status == 5:
             query_ext += "AND DATE(s.start_date) < ?"
             parameters += [datetime.datetime.now().date() - datetime.timedelta(days=utils.config.service_sla)]
+
+        if status == 1:
+            statuses = [1]
+
+        if status == 2:
+            statuses = [2]
+
+        if status == 3:
+            statuses = [3]
+
+        #statuses = utils.DecimalBreakDown(status)
+        question_marks = ['?' for s in statuses]
+        query_ext += " AND s.status in (%s)" % ','.join(question_marks)
+        for st in statuses:
+            parameters += [st]
 
     if len(service_type) and int(service_type):
         if int(service_type) == 1:

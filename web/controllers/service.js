@@ -32,8 +32,8 @@ angular.module('sam').controller('serviceController', ['$scope', '$filter','$htt
 	this.showAddForm = false;	
 	this.loading = false;	
 	
-	this.statusOf = {1: 'פתוח', 2:'בטיפול', 3: 'סגור'};	
-	this.statusesWithIdle = [{status: 0, desc: 'הצג קריאות שירות בכל סטטוס'}, {status: 4,desc: 'קריאות שדורשות טיפול'}, {status: 1,desc: 'הצג קריאות שירות פתוחות'}, {status: 2, desc: 'הצג קריאות שירות בטיפול'}, {status: 4, desc:'הצג קריאות שירות סגורות'}, {status: 3, desc:'הצג קריאות שירות פעילות'}]
+	this.statusOf = {1: 'פתוח', 2:'בעבודה', 3: 'סגור'};
+	this.statusesWithIdle = [{status: 0, desc: 'הצג קריאות שירות בכל סטטוס'}, {status: 4, desc:' הצג קריאות שירות פעילות (פתוחות או סגורות)'}, {status: 5,desc: 'הצג קריאות שדורשות טיפול (פעילות מעל 14 ימים)'}, {status: 1,desc: 'הצג קריאות שירות פתוחות'}, {status: 2, desc: 'הצג קריאות שירות בעבודה'}, {status: 3, desc:'הצג קריאות שירות סגורות'}]
 	this.serviceType = [{status: 0, desc: 'הצג קריאות שירות מכל הסוגים'}, {status: 1,desc: 'הצג קריאות שירות שוטפות'}, {status: 2, desc: 'הצג טיפולים מונעים'}]
 	this.filterStatus = this.statusesWithIdle[0];
 	this.filterType = this.serviceType[0];
@@ -201,6 +201,7 @@ angular.module('sam').controller('serviceController', ['$scope', '$filter','$htt
 				tmp.availableBuildings = _.values(data.buildingObjectPerBuildingId);								
 				tmp.UpdateBuildingTenants();
 				tmp.UpdateTenantBuilding();
+				tmp.service_sla = data.service_sla;
 				tmp.loading = false;				
 		});
 	};
