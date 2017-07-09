@@ -23,13 +23,67 @@
 			<div>
 				<table style="border: 1px solid #CCC; width: 100%;" dir='rtl'>
 					<tr>
+						<th style="width: 2%;" class="sam_th"><input style="margin-left: 3px;" ng-change="togglePreventionsSelections()" ng-model="master_prevention_selected" type="checkbox"></th>
 						<th class="sam_th">תיאור</th>
 						<th class="sam_th">קטגוריה</th>
+						<th class="sam_th">בעל מקצוע</th>
+						<th class="sam_th">חודשים</th>
 					</tr>
 
 					<tr ng-repeat="prev in availablePreventions | filter:filterOptions.filterText" ng-class-odd="'odd'">
-						<td class="sam_td"><input style="margin-left: 3px;" ng-model="prev.copy_prevention_selected" type="checkbox">{{prev.description}}</td>
+						<td class="sam_td"><input style="margin-left: 3px;" ng-model="prev.copy_prevention_selected" type="checkbox"></td>
+						<td class="sam_td">{{prev.description}}</td>
 						<td class="sam_td">{{prev.category}}</td>
+						<td class="sam_td" style="text-align: center;">
+							<select
+								dir="rtl"
+								style="width: 98%"
+								id="availableProfessionals"
+								ui-select2 = "{allowClear : true}"
+								ng-model='prev.professional_id'
+								data-placeholder='בעל מקצוע מטפל'
+								name='professional'
+								ng-change='prevention.ProfessionalChanged()'>
+								<!-- http://stackoverflow.com/questions/25694021/two-way-databinding-in-select2-for-angularjs-doesnt-work-in-angular-1-2-13#25694274 -->
+								<option value=""></option>
+								<option ng-repeat="professional in availableProfessionals" value="{{professional.professional_id}}">{{professional.name}} | {{professional.category}} | {{professional.phones}}</option>
+							</select>
+						</td>
+						<td class="sam_td">
+							<table style="width: 100%; text-align: center;">
+                                <tr>
+                                    <th style="text-align: center;"><i class="fa fa-check"></i></th>
+                                    <th style="text-align: center;">1</th>
+                                    <th style="text-align: center;">2</th>
+                                    <th style="text-align: center;">3</th>
+                                    <th style="text-align: center;">4</th>
+                                    <th style="text-align: center;">5</th>
+                                    <th style="text-align: center;">6</th>
+                                    <th style="text-align: center;">7</th>
+                                    <th style="text-align: center;">8</th>
+                                    <th style="text-align: center;">9</th>
+                                    <th style="text-align: center;">10</th>
+                                    <th style="text-align: center;">11</th>
+                                    <th style="text-align: center;">12</th>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 5px !important;"><input ng-change="updateAllMonths(prev)" ng-model="prev.all_months" type="checkbox"></td>
+                                    <td style="padding: 5px !important;"><input ng-model="prev.january" type="checkbox"></td>
+                                    <td style="padding: 5px !important;"><input ng-model="prev.february" type="checkbox"></td>
+                                    <td style="padding: 5px !important;"><input ng-model="prev.march" type="checkbox"></td>
+                                    <td style="padding: 5px !important;"><input ng-model="prev.april" type="checkbox"></td>
+                                    <td style="padding: 5px !important;"><input ng-model="prev.may" type="checkbox"></td>
+                                    <td style="padding: 5px !important;"><input ng-model="prev.june" type="checkbox"></td>
+                                    <td style="padding: 5px !important;"><input ng-model="prev.july" type="checkbox"></td>
+                                    <td style="padding: 5px !important;"><input ng-model="prev.august" type="checkbox"></td>
+                                    <td style="padding: 5px !important;"><input ng-model="prev.september" type="checkbox"></td>
+                                    <td style="padding: 5px !important;"><input ng-model="prev.october" type="checkbox"></td>
+                                    <td style="padding: 5px !important;"><input ng-model="prev.november" type="checkbox"></td>
+                                    <td style="padding: 5px !important;"><input ng-model="prev.december" type="checkbox"></td>
+                                </tr>
+                            </table>
+						</td>
+
 					</tr>
 				</table>
 			</div-->
@@ -38,7 +92,15 @@
 
         </div>
         <div dir="rtl" class="modal-footer">
-            <button class="btn btn-primary" ng-disabled = "!target_building" ng-click="ok(target_building)">שכפל</button>
+            <button class="btn btn-primary" ng-disabled = "!target_building || !atLeastOnePreventionChosen()" ng-click="ok(target_building)">
+				<span>שכפל</span>
+			</button>
+			<span ng-show="numberOfChosenPreventions()" class="badge badge_success" style="
+					top: 4px;
+					position: absolute;
+					right: 31px;
+					top: 520px;
+				">{{numberOfChosenPreventions()}}</span>
 			<button class="btn btn-danger" ng-click="cancel()">ביטול</button>
         </div>
 
@@ -75,7 +137,6 @@
 		</ul>
 	</div>
 </script>
-
 
 <div class="row">
 	<div class="col-lg-12">

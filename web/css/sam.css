@@ -254,6 +254,10 @@ background-position: -313px -119px;
 	background-color: #E97A7E !important;
 }
 
+.app-modal-window .modal-dialog {
+  width: 80%;
+}
+
 .line-through{
     text-decoration: line-through !important;
 }

@@ -352,12 +352,16 @@ angular.module('sam').controller('preventionController', ['$scope', '$filter','$
 		    var modalInstance = $modal.open({
               templateUrl: 'myCopyBuildingModalContent.html',
               controller: 'myCopyBuildingCtrl',
+              windowClass: 'app-modal-window',
               resolve: {
                 availablePreventions: function () {
                   return distinct_preventions;
                 },
                 availableBuildings: function () {
                   return tmp.availableBuildings;
+                },
+                availableProfessionals: function () {
+                  return tmp.availableProfessionals;
                 }
               }
             });
@@ -585,15 +589,66 @@ angular.module('sam').controller('servicePreventionModalCtrl', ['$scope', '$moda
 	};
 }]);
 
-angular.module('sam').controller('myCopyBuildingCtrl', ['$scope', '$modalInstance', '$http', 'availablePreventions','availableBuildings', function($scope, $modalInstance, $http, availablePreventions, allBuildings) {
+angular.module('sam').controller('myCopyBuildingCtrl', ['$scope', '$modalInstance', '$http', 'availablePreventions','availableBuildings', 'availableProfessionals', function($scope, $modalInstance, $http, availablePreventions, allBuildings, availableProfessionals) {
 
     tmp = this;
+    $scope.master_prevention_selected = false;
 
     $scope.filterOptions = {
 		filterText: ""
 	};
 	$scope.availablePreventions = availablePreventions;
 	$scope.allBuildings = allBuildings;
+	$scope.availableProfessionals = availableProfessionals;
+
+    $scope.togglePreventionsSelections = function(){
+        $scope.master_prevention_selected = !$scope.master_prevention_selected;
+        angular.forEach($scope.availablePreventions, function(prev, index) {
+	        prev.copy_prevention_selected = $scope.master_prevention_selected;
+	    });
+    };
+
+    $scope.updateAllMonths = function(record) {
+	    val = record.all_months;
+	    record.january = val;
+	    record.february = val;
+	    record.march = val;
+	    record.april = val;
+	    record.may = val;
+	    record.june = val;
+	    record.july = val;
+	    record.august = val;
+	    record.september = val;
+	    record.october = val;
+	    record.november = val;
+	    record.december = val;
+	};
+
+	$scope.atLeastOnePreventionChosen = function(){
+
+        res = false;
+
+        angular.forEach($scope.availablePreventions, function(prev, index) {
+	        if (prev.copy_prevention_selected) {
+	            res = true;
+	        }
+	    });
+
+	    return res;
+	};
+
+	$scope.numberOfChosenPreventions = function(){
+
+        count = 0;
+
+        angular.forEach($scope.availablePreventions, function(prev, index) {
+	        if (prev.copy_prevention_selected) {
+	            count += 1;
+	        }
+	    });
+
+	    return count;
+	};
 
 	$scope.ok = function (target_building) {
 
@@ -610,45 +665,6 @@ angular.module('sam').controller('myCopyBuildingCtrl', ['$scope', '$modalInstanc
 	$scope.cancel = function () {
 		$modalInstance.dismiss('cancel');
 	};
-
-    /*
-	$scope.tenant_changed = function (tenant_obj, alert_obj) {
-		if (tenant_obj && alert_obj) {
-			template_details = {
-				'appartment': tenant_obj.apartment_number,
-				'totalDebt': tenant_obj.total_debt,
-				'months': tenant_obj.months,
-				'building': tenant_obj.name,
-				'tenant_name': tenant_obj.tenant_name,
-				'payment': tenant_obj.monthly_payment,
-				'description': tenant_obj.debt_description
-			};
-
-			angular.forEach($scope.dynamic_fields, function(dynamic_field, index){
-				template_details[dynamic_field.template_name] = tenant_obj[dynamic_field.template_name];
-			});
-
-			$http.get('/parseAlertTemplate', {
-			params: {
-				path: $scope.template.path,
-				details: JSON.stringify(template_details),
-				alert: alert_obj.alert_type,
-				content: $scope.template[alert_obj.alert_type+'_content'],
-				mail_subject: $scope.template.mail_subject
-
-			}
-			}).success(function(data) {
-				$scope.alert_content = data;
-			}).
-			error(function(data) {
-				$log.log('error!');
-				$scope.alert_content = {meta: "שגיאה בתבנית", content: '<div style="background: rgb(207, 33, 33); color: white;font-size: 25px;"><p><i class="fa fa-warning"></i></p><p>נמצאה בעיה בתבנית</p><p>אנא בדקו את תוכן התבנית</p><p>ובצעו את השינויים ההכרחיים</p></div>'};
-			});
-		}
-		else {
-			$scope.alert_content = {meta: "", content: ""};
-		}
-	};*/
 
 }]);
 

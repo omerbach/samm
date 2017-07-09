@@ -701,9 +701,9 @@ def fetchDistinctPreventionNames():
     info_db = sqlite3.connect(utils.DB_INFO)
     with info_db as connection:
         cursor = connection.cursor()
-        cursor.execute('select distinct description, category from prevention order by description asc')
+        cursor.execute('select distinct description, category, professional_id from prevention order by description asc')
 
-        distinct_names = [{'description': d, 'category': c} for d, c in cursor]
+        distinct_names = [{'description': d, 'category': c, 'professional_id': i} for d, c, i in cursor]
 
     return json.dumps(distinct_names)
 
@@ -2207,7 +2207,7 @@ def bulkServiceRequests(prevention_details, months_list):
     ]
 
     service_requests = []
-    description = 0 if prevention_details.get("description", "") == "" else prevention_details["description"]
+    description = "" if prevention_details.get("description", "") == "" else prevention_details["description"]
     category = "" if prevention_details.get("category", "") == "" else prevention_details["category"]
     building_id = 0 if prevention_details.get("building_id", "") == "" else prevention_details["building_id"]
     tenant_id = 0 if prevention_details.get("tenant_id", "") == "" else prevention_details["tenant_id"]
@@ -2217,7 +2217,7 @@ def bulkServiceRequests(prevention_details, months_list):
     prevention_id = 0 if prevention_details.get("prevention_id", "") == "" else prevention_details[
         "prevention_id"]
     cost = 0 if prevention_details.get("cost", "") == "" else prevention_details["cost"]
-    comment = 0 if prevention_details.get("comment", "") == "" else prevention_details["comment"]
+    comment = "" if prevention_details.get("comment", "") == "" else prevention_details["comment"]
 
     # insert new ones now
     for d in service_dates:
@@ -2261,7 +2261,33 @@ def bulkPreventions():
 
     # create service requests per each prevention
     for prevention_details in preventions:
-        prevention_details["months"] = '1,2,3,4,5,6,7,8,9,10,11,12'
+        months_list = []
+        if prevention_details.get("january", False):
+            months_list.append('1')
+        if prevention_details.get("february", False):
+            months_list.append('2')
+        if prevention_details.get("march", False):
+            months_list.append('3')
+        if prevention_details.get("april", False):
+            months_list.append('4')
+        if prevention_details.get("may", False):
+            months_list.append('5')
+        if prevention_details.get("june", False):
+            months_list.append('6')
+        if prevention_details.get("july", False):
+            months_list.append('7')
+        if prevention_details.get("august", False):
+            months_list.append('8')
+        if prevention_details.get("september", False):
+            months_list.append('9')
+        if prevention_details.get("october", False):
+            months_list.append('10')
+        if prevention_details.get("november", False):
+            months_list.append('11')
+        if prevention_details.get("december", False):
+            months_list.append('12')
+        prevention_details["months"] = ",".join(months_list)
+
         with info_db as connection:
             cursor = connection.cursor()
             prevention_details["building_id"] = target_building
@@ -2281,8 +2307,9 @@ def bulkPreventions():
             prevention_details["prevention_id"] = cursor.lastrowid
 
     for prevention_details in preventions:
-        # create necessary service requests
-        bulkServiceRequests(prevention_details, prevention_details["months"].split(','))
+        if len(months_list):
+            # create necessary service requests
+            bulkServiceRequests(prevention_details, prevention_details["months"].split(','))
 
 
 @bottle.post('/addNewPrevention')
@@ -2339,7 +2366,7 @@ def addNewPrevention():
                   worker_id,
                   professional_id,
                   months,
-                  prevention_details.get("cost", ""),
+                  cost,
                   prevention_details.get("comment", ""),
                   prevention_details.get("prevention_id", "") ) )
 
@@ -2352,11 +2379,11 @@ def addNewPrevention():
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ''', (prevention_details.get("description", ""),
                   prevention_details.get("category", ""),
-                  prevention_details.get("building_id", ""),
-                  prevention_details.get("worker_id", ""),
-                  prevention_details.get("professional_id", ""),
+                  building_id,
+                  worker_id,
+                  professional_id,
                   months,
-                  prevention_details.get("cost", ""),
+                  cost,
                   prevention_details.get("comment", "")
                   ))
 
@@ -2365,7 +2392,10 @@ def addNewPrevention():
 
 
     prevention_details["prevention_id"] = prevention_id
-    bulkServiceRequests(prevention_details, months_list)
+
+    if len(months_list):
+        # create necessary service requests
+        bulkServiceRequests(prevention_details, months_list)
 
     return {'prevention_id': prevention_id}
 
