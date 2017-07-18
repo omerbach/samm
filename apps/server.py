@@ -1931,6 +1931,18 @@ def resendAlertsFromHistory():
             alertData = file(pathToFile).read().decode('utf-8')
             sendAlert(alertData, alertMeta, alertType, alertDestination, buildingName, recepientName, recepientType, source)
 
+# gets buildings info from the database
+@bottle.post('/resendAlert')
+def resendAlert():
+    f = bottle.request.forms
+    record = json.loads(f.record)
+
+    if record['alert_type'] == 0:
+        record['alert_data'] = record['sms_data']
+
+    sendAlert(record['alert_data'], record['meta_data'], record['alert_type'], record['destination'], record['building_name'], record['recepient_name'],
+              record['recepient_type'], record['source'])
+
 
 #gets buildings info from the database
 @bottle.route('/sendGroupMail')

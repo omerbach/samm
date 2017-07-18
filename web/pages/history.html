@@ -25,6 +25,44 @@
 	</div>
 </script>
 
+<script type="text/ng-template" id="myResendAlertModalContent.html">
+        <div class="modal-header">
+            <h3 class="modal-title">שליחה מחדש ל: {{record.recepient_name}}</h3>
+        </div>
+
+		<div dir="rtl" style="margin: 25px;" id="resend_tabs">
+			<tabset>
+				<tab active="isSMS" disabled="!isSMS">
+					<tab-heading><i class="fa fa-comment-o"></i></tab-heading>
+					<textarea style="height: 300px; width: 100%" ng-model="record.sms_data"></textarea>
+				</tab>
+				<tab active="isMail" disabled="!isMail"><tab-heading><i class="fa fa-envelope-o"></i></tab-heading>
+					<table>
+						<tr>
+							<td class="bold">
+								נושא:&nbsp;
+							</td>
+							<td style="width: 100%;">
+								<input style="margin-top: 20px; margin-bottom: 20px;" placeholder="נושא אימייל" class="form-control" ng-model="record.meta_data"></input>
+							</td>
+						</tr>
+					</table>
+					<textarea class="tiny_mail"  ui-tinymce="mail_tinyConfig" ng-model="record.alert_data"></textarea>
+				</tab>
+				<tab active="isLetter" disabled="!isLetter"><tab-heading><i class="fa fa-file-word-o"></i></tab-heading>
+					<textarea class="tiny_letter"  ui-tinymce="letter_tinyConfig" ng-model="record.alert_data"></textarea>
+				</tab>
+			</tabset>
+		</div>
+
+		<div dir="rtl" class="modal-footer">
+            <button class="btn btn-primary" ng-click="ok(record)">
+				<span>שלח</span>
+			</button>
+			<button class="btn btn-danger" ng-click="cancel()">ביטול</button>
+        </div>
+</script>
+
 <script type="text/ng-template" id="recepientTypeAheadTemplate.html">
 		<a>
 			<i class="fa" ng-class="match.model.icon" ></i>
@@ -168,7 +206,7 @@
 							<button tooltip="בוא נראה מה שלחנו פה" ng-click="history.markAlert(row.alert_id)">
 								<i ng-class="{'fa-eye-slash': row.alert_id == history.watchAlert, 'fa-eye': row.alert_id != history.watchAlert}" class="fa fa-xs"></i></button>
 							&nbsp;&nbsp
-							<button ng-if="row.alert_type == 0 || row.alert_type == 1" tooltip="שלח שוב" ng-click="history.resendAlertsFromHistory(row.alert_id)">
+							<button ng-if="row.alert_type == 0 || row.alert_type == 1" tooltip="שלח שוב" ng-click="history.resendAlertsFromHistory(row)">
 								<i class="fa fa-send-o fa-xs"></i>
 							</button>
 							

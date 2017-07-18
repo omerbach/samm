@@ -1,4 +1,4 @@
-﻿angular.module('sam').controller('historyController', ['$scope', '$sce','$filter','$http','$log', '$location','$compile', '$routeParams', 'User', 'ngTableParams', function($scope, $sce, $filter, $http, $log, $location, $compile, $routeParams, User, ngTableParams) {
+﻿angular.module('sam').controller('historyController', ['$scope', '$sce','$filter','$http','$log', '$location','$compile', '$routeParams', '$modal', 'User', 'ngTableParams', function($scope, $sce, $filter, $http, $log, $location, $compile, $routeParams, $modal, User, ngTableParams) {
 
 	tmp = this;		
 	//a factory which passes paramteres cross controllers
@@ -263,32 +263,66 @@
 		}						
 	};
 	
-	this.resendAlertsFromHistory = function(alert_id) {		
+	this.resendAlertsFromHistory = function(record) {
 		tmp = this;
+
 		if (confirm('אשר שליחה חוזרת') ) {
 			chosenAlerts = [];
 			
-			if (alert_id) {				
-				chosenAlerts = [alert_id];
-			}
-			else {				
-				angular.forEach(this.historyAlerts, function(data, index){							
+			if (record) {
+                    alert_id = record.alert_id;
+                    chosenAlerts = [alert_id];
+
+
+                var modalInstance = $modal.open({
+                  templateUrl: 'myResendAlertModalContent.html',
+                  controller: 'resendAlertModalCtrl',
+                  windowClass: 'app-modal-window',
+                  resolve: {
+                  record: function () {
+                      return record;
+                    }
+                  }
+                });
+
+                modalInstance.result.then(function (record) {
+
+                    console.log('output',record);
+                    //resend this now
+                    tmp.loading = true;
+                    $http.post('/resendAlert',
+                    $.param(
+                        {'record': JSON.stringify(record)}
+                    )).success(function(data) {
+                        tmp.loading = false;
+                        tmp.GetAlerts();
+                    }).error(function(data) {
+                        console.log('response alerssss: ',data);
+                    });
+
+                }, function () {
+                  $log.info('Modal dismissed at: ' + new Date());
+                });
+            }
+            else
+            {
+				angular.forEach(this.historyAlerts, function(data, index){
 					if(data.alert_selected) {
 						chosenAlerts.push(data.alert_id);
 					}
 				});
+
+				tmp.loading = true;
+                $http.post('/resendAlertsFromHistory',
+                $.param(
+                    {'alert_ids': JSON.stringify(chosenAlerts)}
+                )).success(function(data) {
+                    tmp.loading = false;
+                    tmp.GetAlerts();
+                }).error(function(data) {
+                    console.log('response: ',data);
+                });
 			}
-							
-			tmp.loading = true;
-			$http.post('/resendAlertsFromHistory', 
-			$.param(
-				{'alert_ids': JSON.stringify(chosenAlerts)}
-			)).success(function(data) {				
-				tmp.loading = false;
-				tmp.GetAlerts();
-			}).error(function(data) {
-				console.log('response: ',data);
-			});
 		}
 	};		
 	
@@ -355,3 +389,53 @@
 	
 
 }]);
+
+angular.module('sam').controller('resendAlertModalCtrl', ['$scope', '$modalInstance', 'record', function($scope, $modalInstance, record) {
+
+	tiny2 =
+	{
+		selector:'.tiny_mail',
+		content_css : "web/css/tinyMce.css",
+		height : 300,
+		plugins: ["advlist autolink lists link charmap print preview anchor",
+        "searchreplace visualblocks code fullscreen",
+        "insertdatetime paste directionality"],
+		toolbar: "undo redo | styleselect | bold italic | link | alignleft aligncenter alignright | ltr rtl"
+	};
+
+	tiny3 =
+	{
+		selector:'.tiny_letter',
+		content_css : "web/css/tinyMce.css",
+		height : 300,
+		plugins: ["advlist autolink lists link charmap print preview anchor",
+        "searchreplace visualblocks code fullscreen",
+        "insertdatetime paste directionality"],
+		toolbar: "undo redo | styleselect | bold italic | link | alignleft aligncenter alignright | ltr rtl"
+	};
+
+	console.log('record', record);
+
+    $scope.alertEngDescOf = {0: "sms", 1: "mail", 2: "letter"};
+    $scope.record = record;
+    $scope.record.sms_data = $scope.record.alert_data;
+	$scope.mail_tinyConfig = tiny2;
+	$scope.letter_tinyConfig = tiny3;
+
+
+
+    $scope.isSms =  record.alert_type == 0;
+    $scope.isMail =  record.alert_type == 1;
+    $scope.isLetter =  record.alert_type == 2;
+
+
+	$scope.ok = function (record) {
+
+		$modalInstance.close(record);
+	};
+
+	$scope.cancel = function () {
+		$modalInstance.dismiss('cancel');
+	};
+}]);
+

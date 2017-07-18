@@ -466,30 +466,39 @@
 						
 						<td class="sam_td buttons_td">
 														
-							<div  tooltip="תזכורת באמצעות סמס" class="btn-group">
+							<!--div  tooltip="תזכורת באמצעות סמס" class="btn-group">
 								<button style="background-color: #EAEAEA;" class="btn btn-default dropdown-toggle btn-md" data-toggle="dropdown">
-									<i ng-class="{'fa-comment-o': true}" class="fa fa-lg"></i> <span class="caret"></span>						
+									<i ng-class="{'fa-comment-o': true}" class="fa fa-lg"></i> <span class="caret"></span>
 								</button>
-								<ul class="dropdown-menu" style="right: -102px !important;">									
+								<ul class="dropdown-menu" style="right: -102px !important;">
 									<li class="dropdown-submenu">
 										<a href="javascript:void(0);"><i class="fa fa-suitcase"></i>&nbsp;&nbsp;&nbsp;&nbsp;בעל מקצוע</a>
-										<ul href="javascript:void(0);" class="dropdown-menu" style="right: -160px !important;">											
-											<li><a href="javascript:void(0);" ng-click="service.serviceReminder(row, 'professional-'+row.professional_id, 1, 'service_reminder')"><i class="fa fa-wrench failure"></i>&nbsp;&nbsp;&nbsp;&nbsp;פתיחת קריאה</a></li>											
+										<ul href="javascript:void(0);" class="dropdown-menu" style="right: -160px !important;">
+											<li><a href="javascript:void(0);" ng-click="service.serviceReminder(row, 'professional-'+row.professional_id, 1, 'service_reminder')"><i class="fa fa-wrench failure"></i>&nbsp;&nbsp;&nbsp;&nbsp;פתיחת קריאה</a></li>
 										</ul>
 									</li>
 									<li class="dropdown-submenu">
 										<a href="javascript:void(0);"><i class="fa fa-male"></i>&nbsp;&nbsp;&nbsp;&nbsp;דייר</a>
-										<ul href="javascript:void(0);" class="dropdown-menu" style="right: -160px !important;">											
+										<ul href="javascript:void(0);" class="dropdown-menu" style="right: -160px !important;">
 											<li><a href="javascript:void(0);" ng-click="service.serviceReminderTenant(row, 'tenant-'+row.tenant_id, 1, 'service_reminder_tenant_start')"><i class="fa fa-wrench failure"></i>&nbsp;&nbsp;&nbsp;&nbsp;פתיחת קריאה</a></li>
 											<li><a href="javascript:void(0);" ng-click="service.serviceReminderTenant(row, 'tenant-'+row.tenant_id, 2, 'service_reminder_tenant_progress')"><i class="fa fa-wrench almost"></i>&nbsp;&nbsp;&nbsp;&nbsp;קריאה בטיפול</a></li>
 											<li><a href="javascript:void(0);" ng-click="service.serviceReminderTenant(row, 'tenant-'+row.tenant_id, 3, 'service_reminder_tenant_finish')"><i class="fa fa-wrench success"></i>&nbsp;&nbsp;&nbsp;&nbsp;סיום קריאה</a></li>
 										</ul>
-									</li>																		
+									</li>
 								</ul>
-							</div>
+							</div-->
+							<button tooltip="שלח תזכורת ל{{service.professionalOf[row.professional_id].name}} באמצעות סמס" ng-click="service.serviceReminder(row, 'professional-'+row.professional_id, 1, 'service_reminder')">
+								<i  ng-class="{'sam_blue': !row.reminders, 'sam_yellow': row.reminders == 1, 'sam_red': row.reminders > 1}" class="fa-comment-o fa fa-xs"></i>
+								<!-- <span ng-class="{'badge_success': !row.reminders, 'badge_warning': row.reminders == 1, 'badge_urgent': row.reminders > 1}" class="badge">{{row.reminders}}</span> -->
+							</button>
 							&nbsp;
-							
-													
+
+                            <button tooltip="עדכן במצב קריאה את {{row.tenant_name}} באמצעות סמס" ng-click="service.serviceReminder(row, 'tenant-'+row.tenant_id, 1, 'service_reminder_tenant_start')">
+								<i class="sam_blue fa-male fa fa-xs"></i>
+								<!-- <span ng-class="{'badge_success': !row.reminders, 'badge_warning': row.reminders == 1, 'badge_urgent': row.reminders > 1}" class="badge">{{row.reminders}}</span> -->
+							</button>
+							&nbsp;
+
 							<button tooltip="ערוך קריאת שירות" ng-click="service.editServiceRequest(row)">
 								<i  class="fa-pencil-square-o fa fa-xs"></i></button>
 							&nbsp;
