@@ -88,7 +88,11 @@ class ExcelRecord(object):
     
     @property
     def renter(self):
-        return excel_utils.ExtractCellValueByColumn(self, 'שם שוכרים')                
+        return excel_utils.ExtractCellValueByColumn(self, 'שם שוכרים')
+
+    @property
+    def focal_point(self):
+        return excel_utils.ExtractCellValueByColumn(self, 'נציגי בניין')
     
     @property
     def ownerMails(self):                    
@@ -222,8 +226,7 @@ def ParseTenantsGeneralData(excel, buildingOf, dbBuildingName):
         
         #if there is a specific building to update
         if not dbBuildingName or dbBuildingName == building_name:
-                
-            
+
             building = buildingOf[building_name]
             building.based_on_files.add(excel)
             building.building_name = building_name
@@ -232,17 +235,21 @@ def ParseTenantsGeneralData(excel, buildingOf, dbBuildingName):
             app = building.apartmentOf[apartment_number]
             
             app.apartment_number = apartment_number
-            
+            app.focal_point = excelRecord.focal_point
             app.renter = GetRenter(excelRecord)
             app.owner = GetOwner(excelRecord)
-            
+
+            # When the apartment is marked as focal point, store it only on the owner's behalf ( if an owner exists )
+            if app.focal_point and app.owner:
+                app.owner.focal_point = True
+
             #could be that no renter or owner details exist
             if app.renter or app.owner:
                 if app.renter:
                     app.renter.defacto = True
                 else:
                     app.owner.defacto = True
-            
+
             #if no details for renter and owner store an empty person as owner
             else:
                 app.owner = elements.Person()
