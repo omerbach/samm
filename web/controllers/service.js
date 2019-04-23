@@ -198,7 +198,7 @@ angular.module('sam').controller('serviceController', ['$scope', '$filter','$htt
 		}).success(function(data) {
 				
 				tmp.serviceData = data;
-				tmp.availableBuildings = _.values(data.buildingObjectPerBuildingId);								
+				tmp.availableBuildings = _.values(data.buildingObjectPerBuildingId);
 				tmp.UpdateBuildingTenants();
 				tmp.UpdateTenantBuilding();
 				tmp.service_sla = data.service_sla;
@@ -618,9 +618,10 @@ angular.module('sam').controller('serviceController', ['$scope', '$filter','$htt
 	};
 	
 	this.serviceReminderPopUp = function (row, recepient_id, status, template) {
-		tmp = this;		
-		this.row_to_change = row;		
-		
+		focal_points = [];
+		tmp = this;
+		this.row_to_change = row;
+
 		//if no sms to professional, do nothing
 		if (false) {
 			return;
@@ -628,10 +629,31 @@ angular.module('sam').controller('serviceController', ['$scope', '$filter','$htt
 		
 		if (row.building_id) {
 			building_name = tmp.serviceData.buildingObjectPerBuildingId[row.building_id].name;
+			tenantsPerBuilding = tmp.serviceData.tenantsIdsPerBuildingId[row.building_id];
+
+			//fetch focal points for this building
+			angular.forEach(tenantsPerBuilding, function(data, index){
+			    tenantObj = tmp.serviceData.tenantObjectPerTenantId[data];
+			    if (tenantObj.focal_point){
+			        focal_points.push(tmp.serviceData.tenantObjectPerTenantId[data]);
+			    }
+            });
 		}
+
 		else {
 			building_name = "";
 		}
+
+        //if there are several focal points in a building, take the first one for now. Maybe in the future, we will add some
+        //support for a message which takes into account multiple focal points
+		if (focal_points.length){
+		    msg = 'אשר כי הודעת ל' + focal_points[0].tenant_name + ' על יצירת קשר עם בעל המקצוע' + "\n" + 'ניתן ליצור קשר ב: ' + focal_points[0].tenant_phones;
+		    //check if the
+		    if (!confirm(msg)){
+		        return;
+		    }
+		}
+
 		if (row.tenant_id) {
 			tenant_name = tmp.serviceData.tenantObjectPerTenantId[row.tenant_id].tenant_name;
 			tenant_phones = tmp.serviceData.tenantObjectPerTenantId[row.tenant_id].tenant_phones.replace(',', ' ');
@@ -653,6 +675,7 @@ angular.module('sam').controller('serviceController', ['$scope', '$filter','$htt
 		else {
 			worker_name = "";
 		}
+
 		/*
 		here to put if according to reminder (tenant/professional) and to service status and to update profId
 			*/

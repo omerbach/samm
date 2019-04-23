@@ -152,16 +152,21 @@ def UpdateExistingTenant(app, person, tenant_db_id):
     
     defacto = False
     if hasattr(person, 'defacto'):
-        defacto = person.defacto    
+        defacto = person.defacto
+
+    focal_point = False
+    if hasattr(person, 'focal_point'):
+        focal_point = person.focal_point
+
 
     with info_db as connection:
         cursor=connection.cursor()
                 
         cursor.execute('''
         UPDATE tenants 
-        SET name = ?, mails = ?, phones = ?, defacto = ?
+        SET name = ?, mails = ?, phones = ?, defacto = ?, focal_point = ?
         WHERE tenant_id = ?
-        ''', (person.name, ', '.join(person.mails), ', '.join(person.phones), defacto, tenant_db_id) )
+        ''', (person.name, ', '.join(person.mails), ', '.join(person.phones), defacto, focal_point, tenant_db_id) )
         
         if len(app.dynamicData):
             
@@ -195,13 +200,17 @@ def InsertNewTenant(building_db_id, app, person, tenant_type):
     defacto = False
     if hasattr(person, 'defacto'):
         defacto = person.defacto
+
+    focal_point = False
+    if hasattr(person, 'focal_point'):
+        focal_point = person.focal_point
         
     with info_db as connection:
         cursor=connection.cursor()
         
         cursor.execute('''
-        INSERT INTO tenants (building_id, apartment_number, tenant_type, defacto, name, phones, mails) VALUES (?, ?, ?, ?, ?, ?, ?)
-        ''', (building_db_id, app.apartment_number, tenant_type, defacto, person.name, ', '.join(person.phones), ', '.join(person.mails))
+        INSERT INTO tenants (building_id, apartment_number, tenant_type, defacto, focal_point, name, phones, mails) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (building_db_id, app.apartment_number, tenant_type, defacto, focal_point, person.name, ', '.join(person.phones), ', '.join(person.mails))
               )
                 
         

@@ -1,5 +1,6 @@
 from ConfigParser import SafeConfigParser, NoOptionError
 import codecs
+import os
 
 #testing
 class Config(object):
@@ -7,6 +8,7 @@ class Config(object):
         self.parser = SafeConfigParser()
         # Open the file with the correct encoding
         #config.ini file is encoded with utf-8 with bom (saved by notepad) so use utf_8_sig for SafeConfigParser to ignore it
+        print os.getcwd()
         with codecs.open(configFile, 'r', encoding='utf_8_sig') as f:
             self.parser.readfp(f)        
 
