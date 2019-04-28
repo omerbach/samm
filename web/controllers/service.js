@@ -626,7 +626,7 @@ angular.module('sam').controller('serviceController', ['$scope', '$filter','$htt
 		if (false) {
 			return;
 		}
-		
+
 		if (row.building_id) {
 			building_name = tmp.serviceData.buildingObjectPerBuildingId[row.building_id].name;
 			tenantsPerBuilding = tmp.serviceData.tenantsIdsPerBuildingId[row.building_id];
