@@ -628,7 +628,8 @@ def PrepareDataBases():
          focal_point INTEGER DEFAULT 0, -- 0 false, 1 true
          name TEXT NOT NULL,
          phones TEXT DEFAULT NULL, -- comma separated
-         mails TEXT DEFAULT NULL -- comma separated
+         mails TEXT DEFAULT NULL, -- comma separated
+         comment TEXT DEFAULT NULL
         )''')
 
         cursor.execute('''
