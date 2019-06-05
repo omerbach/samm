@@ -100,7 +100,7 @@ def UpdateExistingTenants(app, building_db_id, tenantIdOf):
                 DeleteTenant(tenantIdOf[TENANT_RENTER])
                 UpdateExistingTenant(app, app.owner, tenantIdOf[TENANT_OWNER])
             else:
-                #if there is only a renter this is probably a bug, in this case update owner as an empty operson
+                #if there is only a renter this is probably a bug, in this case update owner as an empty person
                 UpdateExistingTenant(app, elements.Person(), tenantIdOf[TENANT_OWNER])
                 UpdateExistingTenant(app, app.renter, tenantIdOf[TENANT_RENTER])
             
@@ -145,6 +145,20 @@ def UpdateDebts(app, building_db_id):
             INSERT INTO debts (building_id, apartment_number, debt_date, amount, expected, debt_type, description) 
             VALUES (?, ?, ?, ?, ?, ?, ?)
             ''', debts )
+
+
+def UpdateOptOuts(phones):
+    print type(phones)
+    if len(phones):
+        info_db = sqlite3.connect(utils.DB_INFO)
+        with info_db as connection:
+            cursor = connection.cursor()
+
+            # insert current ones
+            cursor.executemany('''
+            INSERT INTO sms_opt_outs (mobile) 
+            VALUES (?)
+            ''', [(p,) for p in phones])
             
 def UpdateExistingTenant(app, person, tenant_db_id):
         
@@ -157,7 +171,6 @@ def UpdateExistingTenant(app, person, tenant_db_id):
     focal_point = False
     if hasattr(person, 'focal_point'):
         focal_point = person.focal_point
-
 
     with info_db as connection:
         cursor=connection.cursor()
@@ -239,8 +252,10 @@ def InsertNewBuilding(building):
     return building_id
 
     
-def UpdateDataBase(data):     
-    
+def UpdateDataBase(data):
+
+    optOutPhones = []
+
     #building_name -> building obj
     for building_name, building in data.items():                
         
@@ -258,7 +273,9 @@ def UpdateDataBase(data):
         ClearBuildingDebts(building_db_id)
         
         for apartment_number, app in building.apartmentOf.items():                        
-            
+            tmp = list ( app.renter.phones if app.renter else [] + app.owner.phones if app.owner else [] )
+            optOutPhones += [''.join(c for c in t if c.isdigit()) for t in tmp]
+
             #new building, add building and apartment tenants
             if new_building:
                 InsertNewTenants(building_db_id, app)                
@@ -280,6 +297,9 @@ def UpdateDataBase(data):
             UpdateExistingBuilding(building, building_db_id)
         
         print building_db_id, building_name, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    print len(optOutPhones), optOutPhones
+    UpdateOptOuts(optOutPhones)
           
 def GetProfessionalAlertsInfo(professional_id):
     info_db = sqlite3.connect(utils.DB_INFO)    
@@ -643,6 +663,12 @@ def PrepareDataBases():
          person_id TEXT DEFAULT NULL,
          comment TEXT DEFAULT NULL         
          )''')
+
+        cursor.execute('''
+                CREATE TABLE IF NOT EXISTS sms_opt_outs (
+                 mobile TEXT,
+                 updated DATETIME DEFAULT (datetime('now','localtime'))     
+                 )''')
 
 
 def GetTableHeaders(db_table):   
