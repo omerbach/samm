@@ -625,7 +625,7 @@ def PrepareDataBases():
          apartment_number TEXT NOT NULL,
          tenant_type INTEGER DEFAULT 1, -- 0 unknown, 1 owner, 2 renter
          defacto INTEGER DEFAULT 1, -- 0 false, 1 true
-         focal_point INTEGER DEFAULT 0, -- 0 false, 1 true
+         focal_point TEXT DEFAULT NULL,
          name TEXT NOT NULL,
          phones TEXT DEFAULT NULL, -- comma separated
          mails TEXT DEFAULT NULL -- comma separated

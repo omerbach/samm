@@ -626,7 +626,7 @@ angular.module('sam').controller('serviceController', ['$scope', '$filter','$htt
 		if (false) {
 			return;
 		}
-		
+
 		if (row.building_id) {
 			building_name = tmp.serviceData.buildingObjectPerBuildingId[row.building_id].name;
 			tenantsPerBuilding = tmp.serviceData.tenantsIdsPerBuildingId[row.building_id];
@@ -634,8 +634,8 @@ angular.module('sam').controller('serviceController', ['$scope', '$filter','$htt
 			//fetch focal points for this building
 			angular.forEach(tenantsPerBuilding, function(data, index){
 			    tenantObj = tmp.serviceData.tenantObjectPerTenantId[data];
-			    if (tenantObj.focal_point){
-			        focal_points.push(tmp.serviceData.tenantObjectPerTenantId[data]);
+			    if (tenantObj.focal_point.length && tenantObj.focal_point != '0'){
+			        focal_points.push(tenantObj);
 			    }
             });
 		}
@@ -648,7 +648,8 @@ angular.module('sam').controller('serviceController', ['$scope', '$filter','$htt
         //support for a message which takes into account multiple focal points
 		if (focal_points.length){
 		    msg = 'אשר כי הודעת ל' + focal_points[0].tenant_name + ' על יצירת קשר עם בעל המקצוע' + "\n" + 'ניתן ליצור קשר ב: ' + focal_points[0].tenant_phones;
-		    //check if the
+		    msg +=  "\n" + focal_points[0].focal_point;
+		    //Show message to user
 		    if (!confirm(msg)){
 		        return;
 		    }
