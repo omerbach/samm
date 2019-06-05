@@ -148,7 +148,7 @@ def UpdateDebts(app, building_db_id):
 
 
 def UpdateOptOuts(phones):
-    print type(phones)
+
     if len(phones):
         info_db = sqlite3.connect(utils.DB_INFO)
         with info_db as connection:
