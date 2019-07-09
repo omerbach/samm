@@ -49,7 +49,7 @@ def SendGrid(to, fromMail, subject, mailContent, html, attachments=[], inlineIma
         html_content='<strong>and easy to do anywhere, even with Python</strong>')
     #message.add_attachment('debt.ini')
     try:
-        sg = SendGridAPIClient('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')
+        sg = SendGridAPIClient(utils.config.mailApiKey)
         response = sg.send(message)
         print(response.status_code)
         print(response.body)
