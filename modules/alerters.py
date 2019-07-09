@@ -1,5 +1,7 @@
 # -*- coding: utf8 -*-  
 import os
+import sqlite3
+
 import fnmatch
 import collections
 import datetime
@@ -345,6 +347,18 @@ class Alerter(object):
 
     @staticmethod
     def SmsAlert(sorcePhone, destPhone, smsMessage):
+
+        formattedPhoneNumber = ''.join(c for c in destPhone if c.isdigit())
+        #check if this number is optedout
+        info_db = sqlite3.connect(utils.DB_INFO)
+        with info_db as connection:
+            cursor = connection.cursor()
+            cursor.execute('select mobile FROM sms_opt_outs where mobile = ?', (formattedPhoneNumber,))
+
+            res = len(cursor.fetchall())
+            if res:
+                return
+
         smsProvider = eval('sms.%s()' % utils.config.smsProvider)
         smsProvider.send(sorcePhone, destPhone, smsMessage)
 
