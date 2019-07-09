@@ -17,28 +17,18 @@ from sendgrid import SendGridAPIClient
 import utils
  
 #will use send grid only for attacments for now
-def SendGrid(to, fromMail, subject, mailContent, html, attachments=[], inlineImages=[]):  
+def SendGrid(to, fromMail, subject, mailContent, html, attachments=[], inlineImages=[]):
 
-    return
+    status_code = 400
 
-    u = utils.config.mailSecondaryUser
-    p = utils.config.mailSecondaryPassword
+    try:
+        sg = SendGridAPIClient(utils.config.mailApiKey)
+        response = sg.send(message)
+        status_code = response.status_code
+    except Exception as e:
+        print(str(e))
 
-    sg = sendgrid.SendGridClient(u, p)
-    message = sendgrid.Mail()
-    message.add_to(to)
-    message.set_subject(subject)    
-    message.set_html(mailContent)            
-    message.set_from(fromMail)    
-
-    for attach in attachments:                
-        attach = attach.replace('\\', '/')            
-        message.add_attachment(os.path.basename(attach), 
-                               attach)
-
-    status, msg = sg.send(message)
-
-    return msg
+    return status_code
         
 class MailGunMail(object):
    
