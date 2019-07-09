@@ -5,7 +5,14 @@ import argparse
 import requests
 
 #https://github.com/sendgrid/sendgrid-python
-import sendgrid
+#https://github.com/sendgrid/sendgrid-python
+#https://github.com/sendgrid/sendgrid-python/blob/master/use_cases/attachment.md
+#https://github.com/sendgrid/sendgrid-python/blob/master/use_cases/README.md
+#https://github.com/sendgrid/sendgrid-python/blob/master/use_cases/send_a_single_email_to_multiple_recipients.md
+#https://stackoverflow.com/questions/40656019/python-sendgrid-send-email-with-pdf-attachment-file
+
+from sendgrid.helpers.mail import Mail
+from sendgrid import SendGridAPIClient
 
 import utils
  
