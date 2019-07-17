@@ -26,7 +26,7 @@ def SendGrid(to, fromMail, subject, mailContent, html, attachments=[], inlineIma
 
     message = Mail(
         from_email=fromMail.encode('utf8'),
-        to_emails='popop',
+        to_emails=to_emails,
         subject=subject.encode('utf8'),
         html_content=mailContent.encode('utf8'))
 
