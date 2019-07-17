@@ -347,6 +347,7 @@ class Alerter(object):
     def SmsAlert(sorcePhone, destPhone, smsMessage):
         smsProvider = eval('sms.%s()' % utils.config.smsProvider)
         smsProvider.send(sorcePhone, destPhone, smsMessage)
+        return True, 'OK'
 
     @staticmethod
     def MailAlert(sorceMail, mailAddress, mailBodyMessage, mailSubject, external_folder):
@@ -360,7 +361,7 @@ class Alerter(object):
         if len(external_folder):
             attachments = [os.path.join(external_folder, attach) for attach in os.listdir(external_folder)]
 
-        mail.MailGunMail().send(to=[mailAddress],
+        return mail.MailGunMail().send(to=[mailAddress],
                                 fromMail=sorceMail,
                                 subject=mailSubject,
                                 message=mailBodyMessage,

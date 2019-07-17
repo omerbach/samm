@@ -19,17 +19,29 @@ import utils
 #will use send grid only for attacments for now
 def SendGrid(to, fromMail, subject, mailContent, html, attachments=[], inlineImages=[]):
 
-    status_code = 400
+    success = True
+    desc = 'Status: '
+
+    to_emails = [ (emailAddr, emailAddr) for emailAddr in to ]
+
+    message = Mail(
+        from_email=fromMail.encode('utf8'),
+        to_emails='popop',
+        subject=subject.encode('utf8'),
+        html_content=mailContent.encode('utf8'))
 
     try:
         sg = SendGridAPIClient(utils.config.mailApiKey)
         response = sg.send(message)
         status_code = response.status_code
-    except Exception as e:
-        print(str(e))
+        desc += str(status_code)
 
-    return status_code
-        
+    except Exception as e:
+        desc += (str(e))
+        success = False
+
+    return success, desc
+
 class MailGunMail(object):
    
     def _prepareFiles(self, attachments, inlines): 
@@ -48,11 +60,11 @@ class MailGunMail(object):
 
     def send(self, to, fromMail, subject, message, html, attachments=[], inlineImages=[]):
 
-        return
         assert not isinstance(to, basestring), 'sendMail expects a list not a string, please correct'
 
-        if len(attachments):
-            response = SendGrid(to, fromMail, subject, message, html, attachments, inlineImages)
+        # always use sendGrid. In the past, we used it only for attachments
+        if True:
+            sucess, desc = SendGrid(to, fromMail, subject, message, html, attachments, inlineImages)
         else:
             return
             me = fromMail
@@ -68,7 +80,7 @@ class MailGunMail(object):
                         }
                     )
             
-        return response
+        return (sucess, desc)
 
     
 if __name__ == '__main__':
@@ -80,9 +92,9 @@ if __name__ == '__main__':
     cmdLineParser.add_argument('-ht', '--html', action='store_true')
     cmdLineParser.add_argument('-f', '--files', nargs='*', help='attachments')           
     cmdLineParser.add_argument('-i', '--inline-images', nargs='*', help='images to be embedded')           
-    cmdLineParser.add_argument('-p', '--providers', nargs='*', default = MailProvidersList)     
-        
+
     cmdLine = cmdLineParser.parse_args()            
     
     m = MailGunMail()
-    m.send(cmdLine.to, cmdLine.subject, cmdLine.body_text, cmdLine.html, cmdLine.files, cmdLine.inline_images)
+    m.send(['blblb'], 'omerba@gmail.com', 'yadyad', '<strong>and easy to do anywhere, even with Python</strong>', True)
+    #m.send(cmdLine.to, cmdLine.subject, cmdLine.body_text, cmdLine.html, cmdLine.files, cmdLine.inline_images)
