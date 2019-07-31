@@ -10,10 +10,12 @@ import requests
 #https://github.com/sendgrid/sendgrid-python/blob/master/use_cases/README.md
 #https://github.com/sendgrid/sendgrid-python/blob/master/use_cases/send_a_single_email_to_multiple_recipients.md
 #https://stackoverflow.com/questions/40656019/python-sendgrid-send-email-with-pdf-attachment-file
+#https://github.com/sendgrid/sendgrid-python/blob/master/use_cases/attachment.md
 
-from sendgrid.helpers.mail import Mail
+from sendgrid.helpers.mail import ( Mail, Attachment, FileContent, FileName, FileType, Disposition, ContentId )
+
 from sendgrid import SendGridAPIClient
-
+import base64
 import utils
  
 #will use send grid only for attacments for now
@@ -29,6 +31,19 @@ def SendGrid(to, fromMail, subject, mailContent, html, attachments=[], inlineIma
         to_emails=to_emails,
         subject=subject.encode('utf8'),
         html_content=mailContent.encode('utf8'))
+
+    for file_path in attachments:
+        with open(file_path, 'rb') as f:
+            data = f.read()
+            f.close()
+        encoded = base64.b64encode(data).decode()
+        attachment = Attachment()
+        attachment.file_content = FileContent(encoded)
+        attachment.file_type = FileType('application/pdf')
+        attachment.file_name = FileName(os.path.basename(file_path))
+        attachment.disposition = Disposition('attachment')
+        attachment.content_id = ContentId('Example Content ID')
+        message.add_attachment(attachment)
 
     try:
         sg = SendGridAPIClient(utils.config.mailApiKey)
