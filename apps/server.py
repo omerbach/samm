@@ -2695,18 +2695,25 @@ def getServiceReminderData():
 def sendAlert(alertContent, alertMetaData, alertType, alertDestination, buildingName, recepientName, recepientType,
               source, external_folder=""):
     if alertType == 0:
-        alerters.Alerter.SmsAlert(source, alertDestination, alertContent)
+        success, desc = alerters.Alerter.SmsAlert(source, alertDestination, alertContent)
         print 'send sms'
     if alertType == 1:
-        alerters.Alerter.MailAlert(source, alertDestination, alertContent, alertMetaData, external_folder)
+        success, desc = alerters.Alerter.MailAlert(source, alertDestination, alertContent, alertMetaData, external_folder)
         print 'send mail'
     if alertType == 2:
         print 'send letter'
         alertContent = '<div class="sam_alert">' + alertContent
         alertContent = alertContent + '<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/></div>'
+        success, desc = True, 'OK'
 
-    storeAlertToHistory(alertContent, alertMetaData, alertType, alertDestination, buildingName, recepientName,
+    print success, desc
+
+    if success:
+        storeAlertToHistory(alertContent, alertMetaData, alertType, alertDestination, buildingName, recepientName,
                         recepientType, source, external_folder)
+    else:
+        pass
+
 
 
 def storeAlertToHistory(alertContent, alertMetaData, alertType, alertDestination, buildingName, recepientName,
@@ -2835,7 +2842,6 @@ def sendTemplateAlert():
 if __name__ == '__main__':
     # enabling bottle to receive large messages
     # http://stackoverflow.com/questions/16865997/python-bottle-module-causes-error-413-request-entity-too-large
-
     bottle.BaseRequest.MEMFILE_MAX = 1024 * 1024
     utils.UpdateSamProcess(os.getpid())
     db_helper.PrepareDataBases()

@@ -5,34 +5,43 @@ import argparse
 import requests
 
 #https://github.com/sendgrid/sendgrid-python
-import sendgrid
+#https://github.com/sendgrid/sendgrid-python
+#https://github.com/sendgrid/sendgrid-python/blob/master/use_cases/attachment.md
+#https://github.com/sendgrid/sendgrid-python/blob/master/use_cases/README.md
+#https://github.com/sendgrid/sendgrid-python/blob/master/use_cases/send_a_single_email_to_multiple_recipients.md
+#https://stackoverflow.com/questions/40656019/python-sendgrid-send-email-with-pdf-attachment-file
+
+from sendgrid.helpers.mail import Mail
+from sendgrid import SendGridAPIClient
 
 import utils
  
 #will use send grid only for attacments for now
-def SendGrid(to, fromMail, subject, mailContent, html, attachments=[], inlineImages=[]):  
+def SendGrid(to, fromMail, subject, mailContent, html, attachments=[], inlineImages=[]):
 
-    return
+    success = True
+    desc = 'Status: '
 
-    u = utils.config.mailSecondaryUser
-    p = utils.config.mailSecondaryPassword
+    to_emails = [ (emailAddr, emailAddr) for emailAddr in to ]
 
-    sg = sendgrid.SendGridClient(u, p)
-    message = sendgrid.Mail()
-    message.add_to(to)
-    message.set_subject(subject)    
-    message.set_html(mailContent)            
-    message.set_from(fromMail)    
+    message = Mail(
+        from_email=fromMail.encode('utf8'),
+        to_emails=to_emails,
+        subject=subject.encode('utf8'),
+        html_content=mailContent.encode('utf8'))
 
-    for attach in attachments:                
-        attach = attach.replace('\\', '/')            
-        message.add_attachment(os.path.basename(attach), 
-                               attach)
+    try:
+        sg = SendGridAPIClient(utils.config.mailApiKey)
+        response = sg.send(message)
+        status_code = response.status_code
+        desc += str(status_code)
 
-    status, msg = sg.send(message)
+    except Exception as e:
+        desc += (str(e))
+        success = False
 
-    return msg
-        
+    return success, desc
+
 class MailGunMail(object):
    
     def _prepareFiles(self, attachments, inlines): 
@@ -51,11 +60,11 @@ class MailGunMail(object):
 
     def send(self, to, fromMail, subject, message, html, attachments=[], inlineImages=[]):
 
-        return
         assert not isinstance(to, basestring), 'sendMail expects a list not a string, please correct'
 
-        if len(attachments):
-            response = SendGrid(to, fromMail, subject, message, html, attachments, inlineImages)
+        # always use sendGrid. In the past, we used it only for attachments
+        if True:
+            sucess, desc = SendGrid(to, fromMail, subject, message, html, attachments, inlineImages)
         else:
             return
             me = fromMail
@@ -71,7 +80,7 @@ class MailGunMail(object):
                         }
                     )
             
-        return response
+        return (sucess, desc)
 
     
 if __name__ == '__main__':
@@ -83,9 +92,9 @@ if __name__ == '__main__':
     cmdLineParser.add_argument('-ht', '--html', action='store_true')
     cmdLineParser.add_argument('-f', '--files', nargs='*', help='attachments')           
     cmdLineParser.add_argument('-i', '--inline-images', nargs='*', help='images to be embedded')           
-    cmdLineParser.add_argument('-p', '--providers', nargs='*', default = MailProvidersList)     
-        
+
     cmdLine = cmdLineParser.parse_args()            
     
     m = MailGunMail()
-    m.send(cmdLine.to, cmdLine.subject, cmdLine.body_text, cmdLine.html, cmdLine.files, cmdLine.inline_images)
+    m.send(['blblb'], 'omerba@gmail.com', 'yadyad', '<strong>and easy to do anywhere, even with Python</strong>', True)
+    #m.send(cmdLine.to, cmdLine.subject, cmdLine.body_text, cmdLine.html, cmdLine.files, cmdLine.inline_images)
